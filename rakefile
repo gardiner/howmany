@@ -1,0 +1,53 @@
+require 'rake/clean'
+include Rake::DSL
+
+
+ROOT = File.dirname(__FILE__)
+NAME = File.basename(ROOT)
+
+
+task :default => [:watch]
+
+
+HAML = FileList['**/*.haml']
+PHP = HAML.ext('php')
+SCSS = FileList['css/*.scss']
+CSS = SCSS.ext('css')
+
+
+CLEAN.include PHP + CSS
+
+
+desc 'Compiles HAML and SCSS resources'
+task :compile => PHP + CSS
+
+
+desc 'Watches the site directory and regenerates when files change'
+task :watch => [:compile] do |t, args|
+    require 'listen'
+    Listen.to(ROOT, :relative_paths => true, :only => /\.(haml|scss)$/) do |mod, add, rem|
+        changed = mod or add or rem
+        changed = changed.first.to_s
+        puts "Changed #{changed}"
+        sh "rake compile"
+    end.start
+    sleep
+end
+
+
+desc 'Starts wordpress dev server'
+task :wordpress => [:compile] do |t|
+    sh "cd howmany_wordpress/-wp && wp server"
+end    
+
+
+rule '.php' => '.haml' do |t|
+    puts "Rebuilding #{t.name}"
+    sh "haml -I \"lib\" -r \"php.rb\" \"#{t.source}\" \"#{t.name}\"" do |ok, res| end
+end
+
+
+rule '.css' => '.scss' do |t|
+    puts "Rebuilding #{t.name}"
+    sh "sass #{t.source} #{t.name}" do |ok, res| end
+end

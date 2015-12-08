@@ -1,0 +1,6 @@
+.sass-cache
+.DS_Store
+-*
+css/*.css
+css/*.css.map
+howmany_wordpress/partials/*.php
