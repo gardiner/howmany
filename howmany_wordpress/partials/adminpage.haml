@@ -1,5 +1,7 @@
-.wrap.howmany{"data-options"=>"{\"apibase\": \"<?php echo admin_url(\"admin-ajax.php\"); ?>\", \"default_data\": {\"action\": \"hm_api\"}}".html_safe}
+.wrap.howmany{"data-options"=>"<?php echo $options; ?>".html_safe}
     #icon-tools.icon32
     %h2
-        Howmany Overview
+        HowMany
         %span.small v<?php echo HM_VERSION; ?>
+
+    %pre.output

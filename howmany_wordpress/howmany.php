@@ -20,6 +20,9 @@ define("HM_PATH", WP_PLUGIN_DIR . "/" . HM_BASE);
 define('HM_LOGTABLENAME', 'howmany_log');
 
 
+require_once __DIR__ . '/vendor/autoload.php';
+
+
 //autoloading all includes
 foreach (glob(HM_PATH . "/inc/*.php") as $filename) {
     require_once($filename);
@@ -40,8 +43,8 @@ class HowMany {
     }
 
     public function init_admin_resources() {
-        wp_enqueue_style('howmany-css', HM_URL . '/css/howmany.css');
-        wp_enqueue_script('howmany-js', HM_URL . '/js/howmany.js', array('jquery'));
+        wp_enqueue_style('howmany', HM_URL . '/css/howmany.css');
+        wp_enqueue_script('howmany', HM_URL . '/js/howmany.js', array('jquery'));
     }
 
     public function init_menus() {
@@ -50,14 +53,27 @@ class HowMany {
 
     public function render_adminpage() {
         $this->check_schema();
+        $options = json_encode(array(
+            "apibase" => admin_url("admin-ajax.php"),
+            "default_data" => array(
+                "action" => "hm_api",
+            ),
+        ));
         include('partials/adminpage.php');
     }
 
     public function api() {
         $db = new HMDatabase();
-        $log = $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc');
+        $views = $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc');
+        $referers = $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l group by l.referer order by count desc');
+        $uas = $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l group by l.useragent order by count desc');
+
         header('Content-Type: application/json');
-        echo json_encode(array("result" => $log));
+        echo json_encode(array(
+            "views" => $views,
+            "referers" => $referers,
+            "useragents" => $uas,
+        ));
         exit;
     }
 
@@ -65,11 +81,15 @@ class HowMany {
      * Track request.
      */
     public function track_request() {
+        if (is_admin()) {
+            return;
+        }
+
         $now = time();
         $fingerprint = $this->generate_fingerprint($_SERVER);
         $url = $_SERVER['REQUEST_URI'];
         $referer = $_SERVER['HTTP_REFERER'];
-        $ua = $_SERVER['HTTP_USER_AGENT'];
+        $ua = json_encode(parse_user_agent());
 
         $db = new HMDatabase();
         $db->insert(HM_LOGTABLENAME, array(

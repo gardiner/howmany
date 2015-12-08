@@ -4,7 +4,7 @@
 $(function() {
     $('.howmany').each(function() {
         var $container = $(this),
-            $output = $('<pre></pre>').appendTo($container),
+            $output = $container.find('.output'),
             options = $.parseJSON($container.attr('data-options') || '{}');
 
         function api(params, success) {
@@ -13,14 +13,15 @@ $(function() {
             $.get(url, data, success);
         }
 
-        $output.text(JSON.stringify(options));
         api({}, function(response) {
-            $output.text('');
-            $.each(response.result, function() {
-                $output.append(JSON.stringify(this)).append('<br>');
+            $output.empty();
+            $.each(response, function(key, value) {
+                $output.append("<h3>" + key + "</h3>");
+                $.each(value, function() {
+                    $output.append(this.count + " " + (this.url || this.referer || this.useragent) + "<br>");
+                });
             });
         });
-
     });
 });
 }(jQuery));
