@@ -64,16 +64,26 @@ class HowMany {
 
     public function api() {
         $db = new HMDatabase();
-        $views = $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc');
-        $referers = $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l group by l.referer order by count desc');
-        $uas = $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l group by l.useragent order by count desc');
+
+        $endpoint = isset($_REQUEST['endpoint']) ? $_REQUEST['endpoint'] : false;
+        switch ($endpoint) {
+            case 'views':
+                $result = array(
+                    "views" => $db->load_all_extended('min(time) starttime, floor(time / (60 * 60 * 24)) day, count(*) views', 'howmany_log group by day'),
+                );
+                break;
+
+            default:
+                $result = array(
+                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc'),
+                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l group by l.referer order by count desc'),
+                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l group by l.useragent order by count desc'),
+                );
+                break;
+        }
 
         header('Content-Type: application/json');
-        echo json_encode(array(
-            "views" => $views,
-            "referers" => $referers,
-            "useragents" => $uas,
-        ));
+        echo json_encode($result);
         exit;
     }
 

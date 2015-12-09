@@ -14,12 +14,18 @@ $(function() {
         }
 
         api({}, function(response) {
-            $output.empty();
             $.each(response, function(key, value) {
                 $output.append("<h3>" + key + "</h3>");
                 $.each(value, function() {
                     $output.append(this.count + " " + (this.url || this.referer || this.useragent) + "<br>");
                 });
+            });
+        });
+
+        api({endpoint: 'views'}, function(response) {
+            $output.append("<h3>Views</h3>")
+            $.each(response.views, function() {
+                $output.append(JSON.stringify(this) + "<br>");
             });
         });
     });
