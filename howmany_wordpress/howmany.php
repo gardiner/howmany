@@ -103,14 +103,16 @@ class HowMany {
 
 
     /**
-     * generates a more or less unique fingerprint from request data
+     * Generates a more or less unique fingerprint from request data
+     * (first three octets of ip address + user agent string).
+     * A weak checksum is used to reduce uniqueness of fingerprints.
      */
     protected function generate_fingerprint($data) {
         $parts = array(
-            $data['REMOTE_ADDR'],
+            implode(".", explode(".", $data['REMOTE_ADDR'], -1)),
             $data['HTTP_USER_AGENT'],
         );
-        return sha1(implode("", $parts), false);
+        return hash('crc32', implode("", $parts), false);
     }
 
     protected function format_date($timestamp, $include_time=false) {
@@ -122,7 +124,7 @@ class HowMany {
         $dbversion = get_option('hm_dbversion', 0);
         $currentversion = HM_DBVERSION;
         if ($dbversion != $currentversion) {
-            $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(40), url varchar(4096), referer varchar(4096), useragent varchar(4096))');
+            $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096))');
             update_option('hm_dbversion', $currentversion);
         }
     }
