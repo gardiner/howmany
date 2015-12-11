@@ -13,63 +13,9 @@
         font-size: 110%;
     }
 
-    textarea {
+    .chart {
+        margin: 2em 0;
         width: 100%;
-        min-height: 400px;
-    }
-
-    table.form {
-        margin: 1em 0;
-        border-collapse: collapse;
-
-        th, td {
-            text-align: left;
-            vertical-align: top;
-            padding: 0.25em 1em 0.25em 0;
-
-            &.center {
-                text-align: center;
-            }
-        }
-    }
-
-    table.log {
-        border-collapse: collapse;
-
-        th, td {
-            border-bottom: 1px solid #aaa;
-            line-height: 1.5em;
-            text-align: left;
-            vertical-align: top;
-            padding: 0.5em 1em 0.5em 0;
-        }
-
-        .details {
-            font-size: 90%;
-            white-space: pre-line;
-            color: #777;
-        }
-
-        .block {
-            display: block;
-        }
-
-        .success {
-            color: #459724;
-        }
-
-        .warn {
-            color: #E7A434;
-        }
-
-        .error {
-            color: #CB2120;
-        }
-
-        &.errorsonly {
-            .success {
-                display: none;
-            }
-        }
+        height:200px;
     }
 }

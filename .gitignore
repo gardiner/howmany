@@ -5,3 +5,4 @@ css/*.css
 css/*.css.map
 howmany_wordpress/partials/*.php
 howmany_wordpress/vendor
+bower_components
