@@ -47,8 +47,11 @@ $(function() {
 
                 scaleFontSize: 10,
                 scaleShowGridLines: true,
-                scaleOverride: true,
-                scaleSteps: 4,
+                scaleBeginAtZero: true,
+
+                //this requires some calculating
+                scaleOverride: false,
+                scaleSteps: 7,
                 scaleStepWidth: 50,
                 scaleStartValue: 0
             });
