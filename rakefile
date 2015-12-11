@@ -38,7 +38,14 @@ end
 desc 'Starts wordpress dev server'
 task :wordpress => [:compile] do |t|
     sh "cd howmany_wordpress/-wp && wp server"
-end    
+end
+
+
+desc 'Packages plugins'
+task :package => [:compile] do |t|
+    sh "mkdir ./-package" if not File.exist? './-package'
+    sh "rsync -vr --copy-links --exclude='-wp' howmany_wordpress ./-package/"
+end
 
 
 rule '.php' => '.haml' do |t|
