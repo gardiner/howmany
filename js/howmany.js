@@ -161,7 +161,7 @@ $(function() {
                         value: parseInt(i.count),
                         label: i.referer || 'Unknown'
                     };
-                if (i.referer.indexOf(options.servername) === -1) {
+                if (i.referer.indexOf('://' + options.servername) === -1) {
                     external.push(mapped);
                 } else {
                     internal.push(mapped);
