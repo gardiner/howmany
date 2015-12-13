@@ -73,12 +73,18 @@ $(function() {
             .append("<h3>Views</h3>")
             .linechart({
                 label: "Views",
-                x: _.map(response.views, function(i) { return moment.unix(i.day * 24 * 60 * 60).format('DD.MM.YYYY'); }),
-                y: _.map(response.views, function(i) { return i.views; })
-            });
+                x: _.map(response.timeline, function(i) { return moment.unix(i.day * 24 * 60 * 60).format('DD.MM.YYYY'); }),
+                y: _.map(response.timeline, function(i) { return i.views; })
+            })
+            .valuetable(response.views, [
+                {label: '#', value: 'count'},
+                {label: 'URL', value: 'url'}
+            ]);
         });
 
         api({enpoint: 'useragents'}, function(response) {
+            var values;
+
             function label(useragent) {
                 var parsed,
                     label;
@@ -97,46 +103,74 @@ $(function() {
                 }
             }
 
+            values = _.map(response.useragents, function(i, n) {
+                return {
+                    value: i.count,
+                    label: label(i.useragent),
+                    color: color(n, response.useragents.length)
+                };
+            });
+
             $output
             .append("<h3>User agents</h3>")
             .piechart({
                 label: "User agents",
-                values: _.map(response.useragents, function(i, n) {
-                    return {
-                        value: i.count,
-                        label: label(i.useragent),
-                        color: color(n, response.useragents.length)
-                    };
-                }).reverse()
+                values: values
             })
+            .valuetable(values, [
+                {label: '#', value: 'value'},
+                {label: 'User Agent', value: 'label'}
+            ]);
         });
 
         api({enpoint: 'referers'}, function(response) {
+            var values;
+
+            values = _.map(response.referers, function(i, n) {
+                return {
+                    value: i.count,
+                    label: i.referer || 'Unknown',
+                    color: color(n, response.referers.length)
+                };
+            });
+
             $output
             .append("<h3>Referrers</h3>")
             .piechart({
                 label: "Referrers",
-                values: _.map(response.referers, function(i, n) {
-                    return {
-                        value: i.count,
-                        label: i.referer,
-                        color: color(n, response.referers.length)
-                    };
-                }).reverse()
+                values: values
             })
+            .valuetable(values, [
+                {label: '#', value: 'value'},
+                {label: 'URL', value: 'label'}
+            ]);
         });
+    });
+});
 
-        api({}, function(response) {
-            var $o = $('<div></div>').insertAfter($output);
-            $.each(response, function(key, value) {
-                $o.append("<h3>" + key + "</h3>");
-                $.each(value, function() {
-                    $o.append(this.count + " " + (this.url || this.referer || this.useragent) + "<br>");
+$.fn.valuetable = function(data, definition) {
+    return this.each(function() {
+        var $container = $(this),
+            $table = $('<table></table>').addClass('valuetable').appendTo($container);
+        //table header
+        $('<tr></tr>').appendTo($table).each(function() {
+            var $row = $(this);
+            $.each(definition, function() {
+                $row.append('<th>' + this.label + '</th>');
+            });
+        });
+        //table data
+        $.each(data, function() {
+            var value = this;
+            $('<tr></tr>').appendTo($table).each(function() {
+                var $row = $(this);
+                $.each(definition, function() {
+                    $row.append('<td>' + value[this.value] + '</td>');
                 });
             });
         });
     });
-});
+};
 
 $.fn.chart = function(func, data) {
     return this.each(function() {

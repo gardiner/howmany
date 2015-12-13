@@ -72,7 +72,8 @@ class HowMany {
         switch ($endpoint) {
             case 'views':
                 $result = array(
-                    "views" => $db->load_all_extended('min(time) starttime, floor(time / (60 * 60 * 24)) day, count(*) views', 'howmany_log group by day'),
+                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc limit 10'),
+                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60 * 60 * 24)) day, count(*) views', HM_LOGTABLENAME . ' l group by day'),
                 );
                 break;
             case 'useragents':
@@ -87,11 +88,7 @@ class HowMany {
                 break;
 
             default:
-                $result = array(
-                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc'),
-                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l group by l.referer order by count desc'),
-                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l group by l.useragent order by count desc'),
-                );
+                $result = array();
                 break;
         }
 

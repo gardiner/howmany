@@ -18,4 +18,26 @@
         width: 100%;
         height:200px;
     }
+
+    .valuetable {
+        width: 100%;
+        border-collapse: collapse;
+
+        tr {
+            th, td {
+                text-align: left;
+                padding: 3px;
+            }
+
+            td {
+                border-top: 1px solid #cccccc;
+            }
+
+            &:nth-child(even) {
+                th, td {
+                    background-color: #E8E8E8;
+                }
+            }
+        }
+    }
 }
