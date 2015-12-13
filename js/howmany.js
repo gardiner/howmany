@@ -26,7 +26,7 @@ function linechart(canvasElement, data) {
         datasets: [
             {
                 label: data.label,
-                strokeColor: data.color || 'rgb(31, 119, 180)',
+                strokeColor: data.color || '#274060',
                 data: data.y
             }
         ]
@@ -60,6 +60,9 @@ $(function() {
     $('.howmany').each(function() {
         var $container = $(this),
             $output = $container.find('.output'),
+            $views = $('<div></div>').appendTo($output),
+            $referers = $('<div></div>').appendTo($output),
+            $useragents = $('<div></div>').appendTo($output),
             options = $.parseJSON($container.attr('data-options') || '{}');
 
         function api(params, success) {
@@ -69,10 +72,10 @@ $(function() {
         }
 
         api({endpoint: 'views'}, function(response) {
-            $output
+            $views
             .append("<h3>Views</h3>")
             .linechart({
-                label: "Views",
+                label: "View History",
                 x: _.map(response.timeline, function(i) { return moment.unix(i.day * 24 * 60 * 60).format('DD.MM.YYYY'); }),
                 y: _.map(response.timeline, function(i) { return i.views; })
             })
@@ -111,10 +114,10 @@ $(function() {
                 };
             });
 
-            $output
+            $useragents
             .append("<h3>User agents</h3>")
             .piechart({
-                label: "User agents",
+                label: "User agent ratio",
                 values: values
             })
             .valuetable(values, [
@@ -124,25 +127,41 @@ $(function() {
         });
 
         api({endpoint: 'referers'}, function(response) {
-            var values;
+            var internal = [],
+                external = [];
 
-            values = _.map(response.referers, function(i, n) {
-                return {
-                    value: i.count,
-                    label: i.referer || 'Unknown',
-                    color: color(n, response.referers.length)
-                };
+            _.each(response.referers, function(i, n) {
+                var mapped = {
+                        value: i.count,
+                        label: i.referer || 'Unknown',
+                        color: color(n, response.referers.length)
+                    };
+                if (i.referer.indexOf(options.servername) === -1) {
+                    external.push(mapped);
+                } else {
+                    internal.push(mapped);
+                }
             });
 
-            $output
+            $referers
             .append("<h3>Referrers</h3>")
             .piechart({
-                label: "Referrers",
-                values: values
+                label: "External Referrers",
+                values: external,
+                cssclass: 'half'
             })
-            .valuetable(values, [
+            .piechart({
+                label: "Internal Referrers",
+                values: internal,
+                cssclass: 'half'
+            })
+            .valuetable(external, [
                 {label: '#', value: 'value'},
-                {label: 'URL', value: 'label'}
+                {label: 'External Referrer', value: 'label'}
+            ])
+            .valuetable(internal, [
+                {label: '#', value: 'value'},
+                {label: 'Internal Referrer', value: 'label'}
             ]);
         });
     });
@@ -151,7 +170,9 @@ $(function() {
 $.fn.valuetable = function(data, definition) {
     return this.each(function() {
         var $container = $(this),
-            $table = $('<table></table>').addClass('valuetable').appendTo($container);
+            $table;
+
+        $table = $('<table></table>').addClass('valuetable').appendTo($container);
         //table header
         $('<tr></tr>').appendTo($table).each(function() {
             var $row = $(this);
@@ -180,7 +201,11 @@ $.fn.chart = function(func, data) {
         if ($container.is('canvas')) {
             $chart = $container;
         } else {
-            $chart = $('<canvas class="chart"></canvas>').appendTo($container);
+            $container = $('<div class="chart"></div>')
+            .addClass(data.cssclass)
+            .appendTo($container)
+            .append("<h4>" + data.label + "</h4>");
+            $chart = $('<canvas></canvas>').appendTo($container);
         }
 
         if (func) {
