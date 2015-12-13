@@ -45,6 +45,7 @@ class HowMany {
     public function init_admin_resources() {
         wp_enqueue_style('howmany', HM_URL . '/css/howmany.css');
         wp_enqueue_script('lodash', HM_URL . '/bower_components/lodash/lodash.min.js', array());
+        wp_enqueue_script('moment.js', HM_URL . '/bower_components/moment/min/moment.min.js', array());
         wp_enqueue_script('chart.js', HM_URL . '/bower_components/Chart.js/Chart.min.js', array());
         wp_enqueue_script('howmany', HM_URL . '/js/howmany.js', array('jquery', 'lodash', 'chart.js'));
     }
@@ -72,6 +73,16 @@ class HowMany {
             case 'views':
                 $result = array(
                     "views" => $db->load_all_extended('min(time) starttime, floor(time / (60 * 60 * 24)) day, count(*) views', 'howmany_log group by day'),
+                );
+                break;
+            case 'useragents':
+                $result = array(
+                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l group by l.useragent order by count desc'),
+                );
+                break;
+            case 'referers':
+                $result = array(
+                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l group by l.referer order by count desc'),
                 );
                 break;
 

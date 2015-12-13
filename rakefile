@@ -24,19 +24,14 @@ task :compile => PHP + CSS
 
 desc 'Watches the site directory and regenerates when files change'
 task :watch => [:compile] do |t, args|
-    require 'listen'
-    Listen.to(ROOT, :relative_paths => true, :only => /\.(haml|scss)$/) do |mod, add, rem|
-        changed = mod or add or rem
-        changed = changed.first.to_s
-        puts "Changed #{changed}"
-        sh "rake compile"
-    end.start
+    listen
     sleep
 end
 
 
 desc 'Starts wordpress dev server'
 task :wordpress => [:compile] do |t|
+    listen
     sh "cd howmany_wordpress/-wp && wp server"
 end
 
@@ -57,4 +52,15 @@ end
 rule '.css' => '.scss' do |t|
     puts "Rebuilding #{t.name}"
     sh "sass #{t.source} #{t.name}" do |ok, res| end
+end
+
+
+def listen
+    require 'listen'
+    Listen.to("howmany_wordpress/partials", "css", :relative_paths => true, :only => /\.(haml|scss)$/) do |mod, add, rem|
+        changed = mod or add or rem
+        changed = changed.first.to_s
+        puts "Changed #{changed}"
+        sh "rake compile"
+    end.start
 end
