@@ -1,8 +1,15 @@
 (function($) {
 "use strict";
 
+//constants
+var COLORS = ['#274060', '#335C81', '#65AFFF', '#1B2845', '#5899E2'],
+    DATEFORMAT = 'DD.MM.YYYY',
+    PIECHART_THRESHOLD = 0.01;
 
-Chart.defaults.global.animation = false;
+//setup charts
+$.extend(Chart.defaults.global, {
+    animation: false
+});
 
 
 function rel_color(index, total) {
@@ -12,7 +19,7 @@ function rel_color(index, total) {
 }
 
 function pal_color(index, total) {
-    var pal = ['#274060', '#335C81', '#65AFFF', '#1B2845', '#5899E2'];
+    var pal = COLORS;
     return pal[index % pal.length];
 }
 
@@ -50,7 +57,27 @@ function linechart(canvasElement, data) {
 }
 
 function piechart(canvasElement, data) {
-    return new Chart(canvasElement.getContext("2d")).Pie(data.values, {
+    var reduced = [],
+        sum = _.sum(data.values, function(i) { return i.value; }),
+        other = 0;
+
+    _.each(data.values, function(i) {
+        if ((1.0 * i.value / sum) >= PIECHART_THRESHOLD) {
+            reduced.push(i);
+        } else {
+            other += i.value;
+        }
+    });
+
+    if (other > 0) {
+        reduced.push({label: 'Other', value: other});
+    }
+
+    _.each(reduced, function(i, n) {
+        i.color = color(n, reduced.length);
+    });
+
+    return new Chart(canvasElement.getContext("2d")).Pie(reduced, {
         segmentStrokeWidth: 1,
         percentageInnerCutout: 50
     });
@@ -76,7 +103,7 @@ $(function() {
             .append("<h3>Views</h3>")
             .linechart({
                 label: "View History",
-                x: _.map(response.timeline, function(i) { return moment.unix(i.day * 24 * 60 * 60).format('DD.MM.YYYY'); }),
+                x: _.map(response.timeline, function(i) { return moment.unix(i.day * 24 * 60 * 60).format(DATEFORMAT); }),
                 y: _.map(response.timeline, function(i) { return i.views; })
             })
             .valuetable(response.views, [
@@ -108,9 +135,8 @@ $(function() {
 
             values = _.map(response.useragents, function(i, n) {
                 return {
-                    value: i.count,
-                    label: label(i.useragent),
-                    color: color(n, response.useragents.length)
+                    value: parseInt(i.count),
+                    label: label(i.useragent)
                 };
             });
 
@@ -132,9 +158,8 @@ $(function() {
 
             _.each(response.referers, function(i, n) {
                 var mapped = {
-                        value: i.count,
-                        label: i.referer || 'Unknown',
-                        color: color(n, response.referers.length)
+                        value: parseInt(i.count),
+                        label: i.referer || 'Unknown'
                     };
                 if (i.referer.indexOf(options.servername) === -1) {
                     external.push(mapped);
