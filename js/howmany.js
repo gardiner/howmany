@@ -82,7 +82,7 @@ $(function() {
             ]);
         });
 
-        api({enpoint: 'useragents'}, function(response) {
+        api({endpoint: 'useragents'}, function(response) {
             var values;
 
             function label(useragent) {
@@ -123,7 +123,7 @@ $(function() {
             ]);
         });
 
-        api({enpoint: 'referers'}, function(response) {
+        api({endpoint: 'referers'}, function(response) {
             var values;
 
             values = _.map(response.referers, function(i, n) {
