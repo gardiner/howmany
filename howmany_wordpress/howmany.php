@@ -62,9 +62,11 @@ class HowMany {
         $this->check_schema();
         $options = json_encode(array(
             "servername" => $_SERVER['SERVER_NAME'],    //will be used to determine external and internal referers
-            "apibase" => admin_url("admin-ajax.php"),   //api request base url
-            "default_data" => array(                    //will be send with each api request
-                "action" => "hm_api",
+            "api" => array(
+                "base" => admin_url("admin-ajax.php"),  //api request base url
+                "default_data" => array(                //will be send with each api request
+                    "action" => "hm_api",
+                ),
             ),
         ));
         include('views/adminpage.html');

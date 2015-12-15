@@ -1,10 +1,19 @@
-define(['jquery', 'lodash'], function($, _) {
+define(['jquery', 'lodash', 'q', 'howmany.config'], function($, _, q, config) {
     "use strict";
 
     return {
-        is_internal: function(url, servername) {
-            return url.indexOf('://' + servername) !== -1;
+        api: function(params) {
+            var deferred = q.defer(),
+                url = config.api.base || '',
+                data = $.extend({}, config.api.default_data || {}, params || {});
+            $.get(url, data, function(result) { deferred.resolve(result); });
+            return deferred.promise;
         },
+
+        is_internal: function(url) {
+            return url.indexOf('://' + config.servername) !== -1;
+        },
+
         format_useragent: function(useragent) {
             var parsed,
                 label = useragent;

@@ -1,40 +1,21 @@
 requirejs.config({
-    baseUrl: requirejs.toUrl(''),
+    baseUrl: requirejs.toUrl('js'),
     paths: {
-        "lodash": 'bower_components/lodash/lodash.min',
-        "Vue": 'bower_components/vue/dist/vue.min',
-        "moment": 'bower_components/moment/min/moment.min',
-        "Chart": 'bower_components/Chart.js/Chart.min',
-        "q": 'bower_components/q/q',
-
-        "howmany.charts": 'js/howmany.charts',
-        "howmany.utils": 'js/howmany.utils'
+        "lodash": '../bower_components/lodash/lodash.min',
+        "Vue": '../bower_components/vue/dist/vue.min',
+        "moment": '../bower_components/moment/min/moment.min',
+        "Chart": '../bower_components/Chart.js/Chart.min',
+        "q": '../bower_components/q/q'
     }
 });
 
-requirejs(['jquery', 'lodash', 'Vue', 'moment', 'q', 'howmany.charts', 'howmany.utils'], function($, _, Vue, moment, q, charts, utils) {
+requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.utils', 'howmany.config'], function($, _, Vue, moment, charts, utils, config) {
     "use strict";
 
-
-    var DATEFORMAT = 'DD.MM.YYYY',
-        ALWAYS_VISIBLE_ROWS = 15,
-        $container = $('#howmany'),
-        options = $.parseJSON($container.attr('data-options') || '{}'),
-        model,
+    var model,
         app;
 
-
-    function api(params) {
-        var deferred = q.defer(),
-            url = options.apibase || '',
-            data = $.extend({}, options.default_data || {}, params || {});
-        $.get(url, data, function(result) { deferred.resolve(result); });
-        return deferred.promise;
-    }
-
-
     model = {
-        options: options,
         views: {
             definition: [
                 {label: '#', value: 'count'},
@@ -69,12 +50,12 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'q', 'howmany.charts', 'howmany.
     };
 
 
-    $.get(requirejs.toUrl('partials/howmany.html'), function(template) {
+    $.get(requirejs.toUrl('../partials/howmany.html'), function(template) {
         var $template = $(template),
             partial = function(id) { return $template.filter('#' + id).html(); };
 
         new Vue({
-            el: $container.find('.root').get(0),
+            el: config.root,
             template: template,
             data: model,
             components: {
@@ -88,10 +69,10 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'q', 'howmany.charts', 'howmany.
                     },
                     computed: {
                         visible_values: function() {
-                            return _.slice(this.values, 0, ALWAYS_VISIBLE_ROWS);
+                            return _.slice(this.values, 0, config.ALWAYS_VISIBLE_ROWS);
                         },
                         hidden_values: function() {
-                            return _.slice(this.values, ALWAYS_VISIBLE_ROWS);
+                            return _.slice(this.values, config.ALWAYS_VISIBLE_ROWS);
                         }
                     }
                 },
@@ -115,16 +96,16 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'q', 'howmany.charts', 'howmany.
         });
     });
 
-    api({endpoint: 'views'})
+    utils.api({endpoint: 'views'})
     .then(function(response) {
         model.views.values = response.views;
         model.views.timeline = {
-            x: _.map(response.timeline, function(i) { return moment.unix(i.day * 24 * 60 * 60).format(DATEFORMAT); }),
+            x: _.map(response.timeline, function(i) { return moment.unix(i.day * 24 * 60 * 60).format(config.DATEFORMAT); }),
             y: _.map(response.timeline, function(i) { return i.views; })
         };
     });
 
-    api({endpoint: 'referers'})
+    utils.api({endpoint: 'referers'})
     .then(function(response) {
         var mapped = _.map(response.referers, function(i) {
                 return {
@@ -132,13 +113,13 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'q', 'howmany.charts', 'howmany.
                     label: i.referer || 'Unknown'
                 };
             }),
-            split = _.partition(mapped, function(i) { return utils.is_internal(i.label, options.servername); });
+            split = _.partition(mapped, function(i) { return utils.is_internal(i.label); });
 
         model.referrers.internal.values = split[0];
         model.referrers.external.values = split[1];
     });
 
-    api({endpoint: 'useragents'})
+    utils.api({endpoint: 'useragents'})
     .then(function(response) {
         model.useragents.values = _.map(response.useragents, function(i, n) {
             return {
