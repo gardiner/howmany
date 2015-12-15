@@ -77,7 +77,7 @@ class HowMany {
         switch ($endpoint) {
             case 'views':
                 $result = array(
-                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc limit 10'),
+                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc'),
                     "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60 * 60 * 24)) day, count(*) views', HM_LOGTABLENAME . ' l group by day'),
                 );
                 break;

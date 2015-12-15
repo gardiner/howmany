@@ -2,8 +2,18 @@
     {{ options | json }}
 
 %h3 Views
-%timeline(label="View History" :values="views.timeline")
+%chart(label="View History" type="timeline" :values="views.timeline")
 %valuetable(:definition="views.definition" :values="views.values")
+
+%h3 Referrers
+%chart.half(label="External Referrers" type="piechart" :values="referrers.external.values")
+%chart.half(label="Internal Referrers" type="piechart" :values="referrers.internal.values")
+%valuetable(:definition="referrers.external.definition" :values="referrers.external.values")
+%valuetable(:definition="referrers.internal.definition" :values="referrers.internal.values")
+
+%h3 User Agents
+%chart(label="User Agents" type="piechart" :values="useragents.values")
+%valuetable(:definition="useragents.definition" :values="useragents.values")
 
 
 

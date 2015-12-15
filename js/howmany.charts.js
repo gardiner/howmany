@@ -59,10 +59,10 @@ define(['jquery', 'Chart'], function($, Chart) {
 
     function piechart(canvasElement, data) {
         var reduced = [],
-            sum = _.sum(data.values, function(i) { return i.value; }),
+            sum = _.sum(data, function(i) { return i.value; }),
             other = 0;
 
-        _.each(data.values, function(i) {
+        _.each(data, function(i) {
             if ((1.0 * i.value / sum) >= PIECHART_THRESHOLD) {
                 reduced.push(i);
             } else {
