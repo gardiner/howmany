@@ -16,10 +16,11 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.components', 'howmany.u
         app;
 
     model = {
+        route: null,
         views: {
             definition: [
                 {label: '#', value: 'count'},
-                {label: 'URL', value: 'url'}
+                {label: 'URL', value: 'url', class_: 'clickable', click: function(row) { model.route = { view: row.url }; }}
             ],
             values: [],
             timeline: {}
@@ -28,14 +29,14 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.components', 'howmany.u
             external: {
                 definition: [
                     {label: '#', value: 'value'},
-                    {label: 'External Referrer', value: 'label'}
+                    {label: 'External Referrer', value: 'label', class_: 'clickable', click: function(row) { model.route = { referer: row.label }; }}
                 ],
                 values: []
             },
             internal: {
                 definition: [
                     {label: '#', value: 'value'},
-                    {label: 'Internal Referrer', value: 'label'}
+                    {label: 'Internal Referrer', value: 'label', class_: 'clickable', click: function(row) { model.route = { referer: row.label }; }}
                 ],
                 values: []
             },
@@ -58,36 +59,39 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.components', 'howmany.u
     });
 
 
-    utils.api({endpoint: 'views'})
-    .then(function(response) {
-        model.views.values = response.views;
-        model.views.timeline = {
-            x: _.map(response.timeline, function(i) { return moment.unix(i.day * 24 * 60 * 60).format(config.DATEFORMAT); }),
-            y: _.map(response.timeline, function(i) { return i.views; })
-        };
-    });
-
-    utils.api({endpoint: 'referers'})
-    .then(function(response) {
-        var mapped = _.map(response.referers, function(i) {
-                return {
-                    value: parseInt(i.count),
-                    label: i.referer || 'Unknown'
-                };
-            }),
-            split = _.partition(mapped, function(i) { return utils.is_internal(i.label); });
-
-        model.referrers.internal.values = split[0];
-        model.referrers.external.values = split[1];
-    });
-
-    utils.api({endpoint: 'useragents'})
-    .then(function(response) {
-        model.useragents.values = _.map(response.useragents, function(i, n) {
-            return {
-                value: parseInt(i.count),
-                label: utils.format_useragent(i.useragent)
+    app.$watch('route', function() {
+        utils.api($.extend({endpoint: 'views'}, app.route))
+        .then(function(response) {
+            var timeline = utils.prepare_timeline(response.timeline, 'day', 'views');
+            model.views.values = response.views;
+            model.views.timeline = {
+                x: _.map(timeline, function(i) { return moment.unix(i.time).format(config.DATEFORMAT); }),
+                y: _.map(timeline, function(i) { return i.value; })
             };
         });
-    });
+
+        utils.api($.extend({endpoint: 'referers'}, app.route))
+        .then(function(response) {
+            var mapped = _.map(response.referers, function(i) {
+                    return {
+                        value: parseInt(i.count),
+                        label: i.referer || 'Unknown'
+                    };
+                }),
+                split = _.partition(mapped, function(i) { return utils.is_internal(i.label); });
+
+            model.referrers.internal.values = split[0];
+            model.referrers.external.values = split[1];
+        });
+
+        utils.api($.extend({endpoint: 'useragents'}, app.route))
+        .then(function(response) {
+            model.useragents.values = _.map(response.useragents, function(i, n) {
+                return {
+                    value: parseInt(i.count),
+                    label: utils.format_useragent(i.useragent)
+                };
+            });
+        });
+    }, {immediate: true});
 });

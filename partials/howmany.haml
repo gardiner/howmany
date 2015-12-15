@@ -1,4 +1,9 @@
 %script#howmany_html(type="x-template")
+    .details(v-if="route")
+        %p(v-if="route.view") Details for view: "{{ route.view }}"
+        %p(v-if="route.referer") Details for referrer: "{{ route.referer }}"
+        %a.clickable(v-on:click="route = null") Back to Overview
+
     %h3 Views
 
     %chart(label="View History" type="timeline" :values="views.timeline")
@@ -27,11 +32,11 @@
                 %th(v-for="column in definition") {{ column.label }}
         %tbody
             %tr(v-for="row in visible_values")
-                %td(v-for="column in definition") {{ row[column.value] }}
+                %td(v-for="column in definition" :class="column.class_" v-on:click="click(column.click, row)") {{ render(column.value, row) }}
         %tbody(v-show="show_hidden")
             %tr(v-for="row in hidden_values")
-                %td(v-for="column in definition") {{ row[column.value] }}
-    %a{"v-if"=>"hidden_values.length", "v-on:click.prevent"=>"show_hidden = !show_hidden", "href"=>""}
+                %td(v-for="column in definition" :class="column.class_" v-on:click="click(column.click, row)") {{ render(column.value, row) }}
+    %a.clickable{"v-if"=>"hidden_values.length", "@click"=>"show_hidden = !show_hidden"}
         %span(v-if="!show_hidden") Alle anzeigen
         %span(v-if="show_hidden") Untere ausblenden
 

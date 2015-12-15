@@ -76,21 +76,23 @@ class HowMany {
         $db = new HMDatabase();
 
         $endpoint = isset($_REQUEST['endpoint']) ? $_REQUEST['endpoint'] : false;
+        $view = isset($_REQUEST['view']) ? $_REQUEST['view'] : '%';
+        $referer = isset($_REQUEST['referer']) ? $_REQUEST['referer'] : '%';
         switch ($endpoint) {
             case 'views':
                 $result = array(
-                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l group by l.url order by count desc'),
-                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60 * 60 * 24)) day, count(*) views', HM_LOGTABLENAME . ' l group by day'),
+                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($view, $referer)),
+                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60 * 60 * 24)) * (60 * 60 * 24) day, count(*) views', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($view, $referer)),
                 );
                 break;
             case 'useragents':
                 $result = array(
-                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l group by l.useragent order by count desc'),
+                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($view, $referer)),
                 );
                 break;
             case 'referers':
                 $result = array(
-                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l where l.referer is not null AND l.referer != "" group by l.referer order by count desc'),
+                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s AND l.referer IS NOT NULL AND l.referer != "" GROUP BY l.referer ORDER BY count DESC', array($view, $referer)),
                 );
                 break;
 

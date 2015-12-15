@@ -4,10 +4,11 @@ define(['jquery'], function($) {
     var $container = $('#howmany'),
         defaults = {
             //constants
-            DATEFORMAT: 'DD.MM.YYYY',
+            DATEFORMAT: 'ddd, DD.MM.',
             ALWAYS_VISIBLE_ROWS: 15,
             COLORS: ['#274060', '#335C81', '#65AFFF', '#1B2845', '#5899E2'],
             PIECHART_THRESHOLD: 0.015,
+            TIMELINE_DAYS: 15,
 
             //default configuration
             root: $container.find('.root').get(0)

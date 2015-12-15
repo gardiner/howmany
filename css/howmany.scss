@@ -1,7 +1,15 @@
+$blue: #0073aa;
+
 .howmany {
     .small {
         font-size: 80%;
         opacity: 0.7;
+    }
+
+    .clickable {
+        color: $blue;
+        text-decoration: underline;
+        cursor: pointer;
     }
 
     h3 {
