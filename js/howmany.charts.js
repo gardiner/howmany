@@ -4,7 +4,9 @@ define(['jquery', 'Chart', 'howmany.config'], function($, Chart, config) {
 
     //setup charts
     $.extend(Chart.defaults.global, {
-        animation: false
+        animation: false,
+        tooltipFontSize: 10,
+        tooltipCaretSize: 4
     });
 
 
@@ -36,7 +38,7 @@ define(['jquery', 'Chart', 'howmany.config'], function($, Chart, config) {
             ]
         }, {
             pointDot: true,
-            pointDotRadius: 2,
+            pointDotRadius: 1.6,
 
             bezierCurve : false,
             datasetFill: false,
