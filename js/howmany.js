@@ -9,7 +9,7 @@ requirejs.config({
     }
 });
 
-requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.utils', 'howmany.config'], function($, _, Vue, moment, charts, utils, config) {
+requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.components', 'howmany.utils', 'howmany.config'], function($, _, Vue, moment, components, utils, config) {
     "use strict";
 
     var model,
@@ -50,51 +50,13 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.utils
     };
 
 
-    $.get(requirejs.toUrl('../partials/howmany.html'), function(template) {
-        var $template = $(template),
-            partial = function(id) { return $template.filter('#' + id).html(); };
-
-        new Vue({
-            el: config.root,
-            template: template,
-            data: model,
-            components: {
-                'valuetable': {
-                    template: partial('valuetable_html'),
-                    props: ['definition', 'values'],
-                    data: function() {
-                        return {
-                            show_hidden: false
-                        }
-                    },
-                    computed: {
-                        visible_values: function() {
-                            return _.slice(this.values, 0, config.ALWAYS_VISIBLE_ROWS);
-                        },
-                        hidden_values: function() {
-                            return _.slice(this.values, config.ALWAYS_VISIBLE_ROWS);
-                        }
-                    }
-                },
-                'chart': {
-                    template: partial('chart_html'),
-                    props: ['label', 'values', 'type'],
-                    ready: function() {
-                        this.$watch('values', function() {
-                            if (this.type === 'piechart') {
-                                charts.piechart($(this.$el).find('canvas')[0], this.values);
-                            } else {
-                                charts.linechart($(this.$el).find('canvas')[0], this.values);
-                            }
-                        }, { immediate: true });
-                    }
-                }
-            },
-            ready: function() {
-                app = this;
-            }
-        });
+    app = new Vue({
+        el: config.root,
+        template: '#howmany_html',
+        data: model,
+        components: components
     });
+
 
     utils.api({endpoint: 'views'})
     .then(function(response) {
