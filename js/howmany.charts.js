@@ -1,9 +1,5 @@
-define(['jquery', 'Chart'], function($, Chart) {
+define(['jquery', 'Chart', 'howmany.config'], function($, Chart, config) {
     "use strict";
-
-
-    var COLORS = ['#274060', '#335C81', '#65AFFF', '#1B2845', '#5899E2'],
-        PIECHART_THRESHOLD = 0.01;
 
 
     //setup charts
@@ -19,7 +15,7 @@ define(['jquery', 'Chart'], function($, Chart) {
     }
 
     function pal_color(index, total) {
-        var pal = COLORS;
+        var pal = config.COLORS;
         return pal[index % pal.length];
     }
 
@@ -63,7 +59,7 @@ define(['jquery', 'Chart'], function($, Chart) {
             other = 0;
 
         _.each(data, function(i) {
-            if ((1.0 * i.value / sum) >= PIECHART_THRESHOLD) {
+            if ((1.0 * i.value / sum) >= config.PIECHART_THRESHOLD) {
                 reduced.push(i);
             } else {
                 other += i.value;
