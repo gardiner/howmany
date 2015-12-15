@@ -10,7 +10,7 @@ requirejs.config({
     }
 });
 
-requirejs(['jquery', 'lodash', 'moment', 'howmany.charts'], function($, _, moment, howmany_charts) {
+requirejs(['jquery', 'lodash', 'moment', 'q', 'howmany.charts'], function($, _, moment, q, howmany_charts) {
     "use strict";
 
     //constants
@@ -26,13 +26,16 @@ requirejs(['jquery', 'lodash', 'moment', 'howmany.charts'], function($, _, momen
                 $useragents = $('<div></div>').appendTo($output),
                 options = $.parseJSON($container.attr('data-options') || '{}');
 
-            function api(params, success) {
-                var url = options.apibase || '',
+            function api(params) {
+                var deferred = q.defer(),
+                    url = options.apibase || '',
                     data = $.extend({}, options.default_data || {}, params || {});
-                $.get(url, data, success);
+                $.get(url, data, function(result) { deferred.resolve(result); });
+                return deferred.promise;
             }
 
-            api({endpoint: 'views'}, function(response) {
+            api({endpoint: 'views'})
+            .then(function(response) {
                 $views
                 .append("<h3>Views</h3>")
                 .linechart({
@@ -46,7 +49,8 @@ requirejs(['jquery', 'lodash', 'moment', 'howmany.charts'], function($, _, momen
                 ]);
             });
 
-            api({endpoint: 'useragents'}, function(response) {
+            api({endpoint: 'useragents'})
+            .then(function(response) {
                 var values;
 
                 function label(useragent) {
@@ -86,7 +90,8 @@ requirejs(['jquery', 'lodash', 'moment', 'howmany.charts'], function($, _, momen
                 ]);
             });
 
-            api({endpoint: 'referers'}, function(response) {
+            api({endpoint: 'referers'})
+            .then(function(response) {
                 var internal = [],
                     external = [];
 
