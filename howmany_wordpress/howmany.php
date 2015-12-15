@@ -44,10 +44,14 @@ class HowMany {
 
     public function init_admin_resources() {
         wp_enqueue_style('howmany', HM_URL . '/css/howmany.css');
-        wp_enqueue_script('lodash', HM_URL . '/bower_components/lodash/lodash.min.js', array());
-        wp_enqueue_script('moment.js', HM_URL . '/bower_components/moment/min/moment.min.js', array());
-        wp_enqueue_script('chart.js', HM_URL . '/bower_components/Chart.js/Chart.min.js', array());
-        wp_enqueue_script('howmany', HM_URL . '/js/howmany.js', array('jquery', 'lodash', 'chart.js'));
+        wp_enqueue_script('requirejs', HM_URL . '/bower_components/requirejs/require.js', array('jquery'));
+        wp_localize_script('requirejs', 'require', array(
+            'baseUrl' => HM_URL,
+            'deps'    => array(
+                HM_URL . '/js/jquery.compat.js',
+                HM_URL . '/js/howmany.js',
+            )
+        ));
     }
 
     public function init_menus() {
