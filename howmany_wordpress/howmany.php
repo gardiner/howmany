@@ -67,7 +67,7 @@ class HowMany {
                 "action" => "hm_api",
             ),
         ));
-        include('partials/adminpage.php');
+        include('views/adminpage.html');
     }
 
     public function api() {

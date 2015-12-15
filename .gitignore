@@ -3,6 +3,7 @@
 -*
 css/*.css
 css/*.css.map
-howmany_wordpress/partials/*.php
+partials/*.html
+howmany_wordpress/views/*.html
 howmany_wordpress/vendor
 bower_components

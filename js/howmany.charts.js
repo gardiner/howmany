@@ -30,12 +30,12 @@ define(['jquery', 'Chart'], function($, Chart) {
 
     function linechart(canvasElement, data) {
         return new Chart(canvasElement.getContext("2d")).Line({
-            labels: data.x,
+            labels: data.x || [],
             datasets: [
                 {
-                    label: data.label,
+                    label: data.label || '',
                     strokeColor: data.color || '#274060',
-                    data: data.y
+                    data: data.y || []
                 }
             ]
         }, {

@@ -1,0 +1,24 @@
+%pre
+    {{ options | json }}
+
+%h3 Views
+%timeline(label="View History" :values="views.timeline")
+%valuetable(:definition="views.definition" :values="views.values")
+
+
+
+%script#valuetable_html(type="x-template")
+    %table.valuetable
+        %thead
+            %tr
+                %th(v-for="column in definition") {{ column.label }}
+        %tbody
+            %tr(v-for="row in values")
+                %td(v-for="column in definition") {{ row[column.value] }}
+
+
+
+%script#chart_html(type="x-template")
+    .chart
+        %h4 {{ label }}
+        %canvas

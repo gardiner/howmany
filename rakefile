@@ -10,16 +10,16 @@ task :default => [:watch]
 
 
 HAML = FileList['**/*.haml']
-PHP = HAML.ext('php')
+HTML = HAML.ext('html')
 SCSS = FileList['css/*.scss']
 CSS = SCSS.ext('css')
 
 
-CLEAN.include PHP + CSS
+CLEAN.include HTML + CSS
 
 
 desc 'Compiles HAML and SCSS resources'
-task :compile => PHP + CSS
+task :compile => HTML + CSS
 
 
 desc 'Watches the site directory and regenerates when files change'
@@ -43,7 +43,7 @@ task :package => [:compile] do |t|
 end
 
 
-rule '.php' => '.haml' do |t|
+rule '.html' => '.haml' do |t|
     puts "Rebuilding #{t.name}"
     sh "haml -I \"lib\" -r \"php.rb\" \"#{t.source}\" \"#{t.name}\"" do |ok, res| end
 end
@@ -57,7 +57,7 @@ end
 
 def listen
     require 'listen'
-    Listen.to("howmany_wordpress/partials", "css", :relative_paths => true, :only => /\.(haml|scss)$/) do |mod, add, rem|
+    Listen.to("partials", "css", "howmany_wordpress/views", :relative_paths => true, :only => /\.(haml|scss)$/) do |mod, add, rem|
         changed = mod or add or rem
         changed = changed.first.to_s
         puts "Changed #{changed}"
