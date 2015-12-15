@@ -1,17 +1,19 @@
-%pre
-    {{ options | json }}
-
 %h3 Views
+
 %chart(label="View History" type="timeline" :values="views.timeline")
 %valuetable(:definition="views.definition" :values="views.values")
 
+
 %h3 Referrers
+
 %chart.half(label="External Referrers" type="piechart" :values="referrers.external.values")
 %chart.half(label="Internal Referrers" type="piechart" :values="referrers.internal.values")
 %valuetable(:definition="referrers.external.definition" :values="referrers.external.values")
 %valuetable(:definition="referrers.internal.definition" :values="referrers.internal.values")
 
+
 %h3 User Agents
+
 %chart(label="User Agents" type="piechart" :values="useragents.values")
 %valuetable(:definition="useragents.definition" :values="useragents.values")
 
@@ -23,8 +25,14 @@
             %tr
                 %th(v-for="column in definition") {{ column.label }}
         %tbody
-            %tr(v-for="row in values")
+            %tr(v-for="row in visible_values")
                 %td(v-for="column in definition") {{ row[column.value] }}
+        %tbody(v-show="show_hidden")
+            %tr(v-for="row in hidden_values")
+                %td(v-for="column in definition") {{ row[column.value] }}
+    %a{"v-if"=>"hidden_values.length", "v-on:click.prevent"=>"show_hidden = !show_hidden", "href"=>""}
+        %span(v-if="!show_hidden") Alle anzeigen
+        %span(v-if="show_hidden") Untere ausblenden
 
 
 

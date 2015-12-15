@@ -140,10 +140,6 @@ class HowMany {
         return hash('crc32', implode("", $parts), false);
     }
 
-    protected function format_date($timestamp, $include_time=false) {
-        return date($include_time ? 'd.m.y G:i:s' : 'd.m.Y', $timestamp);
-    }
-
     protected function check_schema() {
         $db = new HMDatabase();
         $dbversion = get_option('hm_dbversion', 0);

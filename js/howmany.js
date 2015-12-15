@@ -17,6 +17,7 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'q', 'howmany.charts', 'howmany.
 
 
     var DATEFORMAT = 'DD.MM.YYYY',
+        ALWAYS_VISIBLE_ROWS = 15,
         $container = $('#howmany'),
         options = $.parseJSON($container.attr('data-options') || '{}'),
         model,
@@ -79,7 +80,20 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'q', 'howmany.charts', 'howmany.
             components: {
                 'valuetable': {
                     template: partial('valuetable_html'),
-                    props: ['definition', 'values']
+                    props: ['definition', 'values'],
+                    data: function() {
+                        return {
+                            show_hidden: false
+                        }
+                    },
+                    computed: {
+                        visible_values: function() {
+                            return _.slice(this.values, 0, ALWAYS_VISIBLE_ROWS);
+                        },
+                        hidden_values: function() {
+                            return _.slice(this.values, ALWAYS_VISIBLE_ROWS);
+                        }
+                    }
                 },
                 'chart': {
                     template: partial('chart_html'),
