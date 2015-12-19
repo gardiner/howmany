@@ -156,12 +156,27 @@ class HowMany {
 
         if ($dbversion != $currentversion) {
             if ($dbversion == 1) {
-                //add missing visit column
+                //add missing visit column and populate it with values
                 $db->query('ALTER TABLE ' . HM_LOGTABLENAME . ' ADD visit int');
+                $this->regenerate_visits();
             } else if ($dbversion != $currentversion) {
                 $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096))');
             }
             update_option('hm_dbversion', $currentversion);
+        }
+    }
+
+    protected function regenerate_visits() {
+        $db = new HMDatabase();
+        $views = $db->load_all(HM_LOGTABLENAME . ' l', 'l.visit IS NULL ORDER BY l.time');
+        foreach ($views as $view) {
+            $result = $db->query('SELECT COALESCE(' .
+                                    '(SELECT MAX(l.visit) FROM ' . HM_LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
+                                    '(SELECT MAX(ll.visit)+1 FROM ' . HM_LOGTABLENAME . ' ll),
+                                    1) visit',
+                                array($view->fingerprint, $view->time, MAXVISITLENGTH));
+            $visit = $result[0]->visit;
+            $db->query('UPDATE ' . HM_LOGTABLENAME . ' l SET l.visit=%d WHERE l.id=%d', array($visit, $view->id));
         }
     }
 }
