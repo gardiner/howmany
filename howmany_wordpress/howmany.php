@@ -11,13 +11,14 @@ License: custom
 
 
 define("HM_VERSION", "0.0.4");
-define("HM_DBVERSION", 1);
+define("HM_DBVERSION", 2);
 
 define("HM_BASE", basename(dirname(__FILE__)));
 define("HM_URL", WP_PLUGIN_URL . "/" . HM_BASE);
 define("HM_PATH", WP_PLUGIN_DIR . "/" . HM_BASE);
 
 define('HM_LOGTABLENAME', 'howmany_log');
+define('MAXVISITLENGTH', 60 * 60);          //1 hour
 
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -121,13 +122,17 @@ class HowMany {
         $ua = json_encode(parse_user_agent());
 
         $db = new HMDatabase();
-        $db->insert(HM_LOGTABLENAME, array(
-            "time" => $now,
-            "fingerprint" => $fingerprint,
-            "url" => $url,
-            "referer" => $referer,
-            "useragent" => $ua,
-        ), array('%d', '%s', '%s', '%s', '%s'));
+        $db->query('INSERT INTO ' . HM_LOGTABLENAME . ' ' .
+                    '(time, fingerprint, url, referer, useragent, visit) ' .
+                    'VALUES (' .
+                        '%d, %s, %s, %s, %s,' .
+                        '(SELECT COALESCE(' .
+                            '(SELECT MAX(l.visit) FROM ' . HM_LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
+                            '(SELECT MAX(ll.visit)+1 FROM ' . HM_LOGTABLENAME . ' ll),
+                            1)' .
+                        ')' .
+                    ')',
+                    array($now, $fingerprint, $url, $referer, $ua, $fingerprint, $now, MAXVISITLENGTH));
     }
 
 
@@ -148,8 +153,14 @@ class HowMany {
         $db = new HMDatabase();
         $dbversion = get_option('hm_dbversion', 0);
         $currentversion = HM_DBVERSION;
+
         if ($dbversion != $currentversion) {
-            $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096))');
+            if ($dbversion == 1) {
+                //add missing visit column
+                $db->query('ALTER TABLE ' . HM_LOGTABLENAME . ' ADD visit int');
+            } else if ($dbversion != $currentversion) {
+                $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096))');
+            }
             update_option('hm_dbversion', $currentversion);
         }
     }
