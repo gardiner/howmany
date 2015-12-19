@@ -30,19 +30,22 @@ class HMDatabase {
 
     public function query($query, $params=null) {
         $statement = $this->prepare($query, null, $params);
-        return $this->db->query($statement);
+        $this->db->query($statement);
+        return $this->db->last_result;
     }
 
     protected function prepare($query, $where=null, $params=null) {
         if (!$where && !$params) {
             return $query;
-        } else {
-            $query = $where ? "$query WHERE $where" : $query;
-            $params = $params ? $params : array();
-            array_unshift($params, $query);
-            $statement = call_user_func_array(array($this->db, 'prepare'), $params);
-            return $statement;
         }
+        $query = $where ? "$query WHERE $where" : $query;
+        $params = $params ? $params : array();
+        if (empty($params)) {
+            return $query;
+        }
+        array_unshift($params, $query);
+        $statement = call_user_func_array(array($this->db, 'prepare'), $params);
+        return $statement;
     }
 }
 
