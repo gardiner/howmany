@@ -12,6 +12,21 @@ $blue: #0073aa;
         cursor: pointer;
     }
 
+    .details {
+        margin: 2em 0;
+
+        .title {
+            font-size: 125%;
+            font-weight: bold;
+            color: black;
+            margin: 0.25em 0;
+
+            .url {
+                color: $blue;
+            }
+        }
+    }
+
     h3 {
         margin: 2em 0 1em 0;
     }
@@ -47,9 +62,12 @@ $blue: #0073aa;
 
     .valuetable {
         clear: both;
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 90%;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 90%;
+        }
 
         tr {
             th, td {
