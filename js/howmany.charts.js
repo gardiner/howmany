@@ -82,10 +82,35 @@ define(['jquery', 'Chart', 'howmany.config'], function($, Chart, config) {
         });
     }
 
+    function barchart(canvasElement, data) {
+        return new Chart(canvasElement.getContext("2d")).Bar({
+            labels: data.x || [],
+            datasets: [
+                {
+                    label: data.label || '',
+                    fillColor: data.color || '#274060',
+                    data: data.y || []
+                }
+            ]
+        }, {
+        });
+    }
 
     return {
-        linechart: linechart,
-        piechart: piechart
+        /**
+         * Converts a list of objects into an {x: ..., y: ...} object as required for linecharts and historgrams.
+         */
+        values2xy: function(values, x_field, y_field) {
+            return {
+                x: _.map(values, x_field),
+                y: _.map(values, y_field)
+            };
+        },
+        render: {
+            linechart: linechart,
+            piechart: piechart,
+            barchart: barchart
+        }
     };
 
 });

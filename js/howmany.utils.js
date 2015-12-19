@@ -19,12 +19,25 @@ define(['jquery', 'lodash', 'moment', 'q', 'howmany.config'], function($, _, mom
                     timestamp = day.unix(),
                     key = day.dayOfYear(),
                     value = values.hasOwnProperty(key.toString()) ? values[key.toString()][value_field] : 0;
-                return {time: timestamp, value: value};
+                return {time: moment.unix(timestamp).format(config.DATEFORMAT), value: value};
             });
+        },
+
+        prepare_histogram: function(data, bin_field, value_field) {
+            return _.map(data, function(i) { return {bin: i[bin_field], value: i[value_field]}; });
         },
 
         is_internal: function(url) {
             return url.indexOf('://' + config.servername) !== -1;
+        },
+
+        format_duration: function(seconds) {
+            var duration = moment.duration(seconds, 'seconds');
+            if (duration.asSeconds() > 59) {
+                return Math.floor(duration.asMinutes()) + 'm';
+            } else {
+                return duration.seconds() + 's';
+            }
         },
 
         format_useragent: function(useragent) {

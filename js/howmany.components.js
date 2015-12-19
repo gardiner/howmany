@@ -46,11 +46,8 @@ define(['jquery', 'lodash', 'howmany.charts', 'howmany.config'], function($, _, 
                     if (chart) {
                         chart.destroy();
                     }
-
-                    if (this.type === 'piechart') {
-                        chart = charts.piechart($(this.$el).find('canvas')[0], this.values);
-                    } else {
-                        chart = charts.linechart($(this.$el).find('canvas')[0], this.values);
+                    if (charts.render.hasOwnProperty(this.type)) {
+                        chart = charts.render[this.type]($(this.$el).find('canvas')[0], this.values);
                     }
                 }, { immediate: true });
             }

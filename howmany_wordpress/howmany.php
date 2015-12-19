@@ -83,7 +83,20 @@ class HowMany {
             case 'views':
                 $result = array(
                     "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($view, $referer)),
-                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60 * 60 * 24)) * (60 * 60 * 24) day, count(*) views', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($view, $referer)),
+                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60*60*24)) * (60*60*24) day, count(*) views', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($view, $referer)),
+                );
+                break;
+            case 'visits':
+                $entry_exit_query = '(SELECT l.visit, (SELECT ll.url FROM ' . HM_LOGTABLENAME . ' ll WHERE ll.visit=l.visit ORDER BY ll.time ASC LIMIT 1) entryurl, (SELECT ll.url FROM ' . HM_LOGTABLENAME . ' ll WHERE ll.visit=l.visit ORDER BY ll.time DESC LIMIT 1) exiturl FROM ' . HM_LOGTABLENAME . ' l group by visit) urls';
+                $result = array(
+                    /*
+                    "visits" => $db->load_all_extended('visit, count(id) views, min(time) starttime, max(time) endtime, max(time)-min(time) duration, floor(time/(60*60*24))*(60*60*24) day', HM_LOGTABLENAME, 'TRUE GROUP BY visit'),
+                    */
+                    "timeline" => $db->load_all_extended('count(v.visit) count, v.day' ,'(SELECT l.visit, floor(l.time / (60*60*24)) * (60*60*24) day FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) v', 'TRUE GROUP BY v.day'),
+                    "entryurls" => $db->load_all_extended('count(visit) count, entryurl', $entry_exit_query, 'TRUE GROUP BY entryurl ORDER BY count DESC'),
+                    "exiturls" => $db->load_all_extended('count(visit) count, exiturl', $entry_exit_query, 'TRUE GROUP BY exiturl ORDER BY count DESC'),
+                    "views" => $db->load_all_extended('viewcount, count(viewcount) count', '(SELECT l.visit, count(l.url) viewcount FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) viewcounts', 'TRUE GROUP BY viewcount'),
+                    "durations" => $db->load_all_extended('duration, count(duration) count', '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . HM_LOGTABLENAME . ' l GROUP BY visit) durations', 'TRUE GROUP BY duration'),
                 );
                 break;
             case 'useragents':

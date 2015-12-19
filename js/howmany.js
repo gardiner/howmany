@@ -9,7 +9,7 @@ requirejs.config({
     }
 });
 
-requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.components', 'howmany.utils', 'howmany.config'], function($, _, Vue, moment, components, utils, config) {
+requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.components', 'howmany.utils', 'howmany.config'], function($, _, Vue, moment, charts, components, utils, config) {
     "use strict";
 
     var model,
@@ -24,6 +24,25 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.components', 'howmany.u
             ],
             values: [],
             timeline: {}
+        },
+        visits: {
+            entryurls: {
+                definition: [
+                    {label: '#', value: 'count'},
+                    {label: 'Entry URL', value: 'entryurl'}
+                ],
+                values: []
+            },
+            exiturls: {
+                definition: [
+                    {label: '#', value: 'count'},
+                    {label: 'Exit URL', value: 'exiturl'}
+                ],
+                values: []
+            },
+            timeline: {},
+            views: {},
+            durations: {}
         },
         referrers: {
             external: {
@@ -63,11 +82,22 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.components', 'howmany.u
         utils.api($.extend({endpoint: 'views'}, app.route))
         .then(function(response) {
             var timeline = utils.prepare_timeline(response.timeline, 'day', 'views');
+
+            model.views.timeline = charts.values2xy(timeline, 'time', 'value');
             model.views.values = response.views;
-            model.views.timeline = {
-                x: _.map(timeline, function(i) { return moment.unix(i.time).format(config.DATEFORMAT); }),
-                y: _.map(timeline, function(i) { return i.value; })
-            };
+        });
+
+        utils.api($.extend({endpoint: 'visits'}, app.route))
+        .then(function(response) {
+            var timeline = utils.prepare_timeline(response.timeline, 'day', 'count'),
+                views = utils.prepare_histogram(response.views, 'viewcount', 'count'),
+                durations = utils.prepare_histogram(response.durations, 'duration', 'count');
+
+            model.visits.timeline = charts.values2xy(timeline, 'time', 'value');
+            model.visits.views = charts.values2xy(views, 'bin', 'value');
+            model.visits.durations = charts.values2xy(durations, function(i) { return utils.format_duration(parseInt(i.bin)); }, 'value');
+            model.visits.entryurls.values = response.entryurls;
+            model.visits.exiturls.values = response.exiturls;
         });
 
         utils.api($.extend({endpoint: 'referers'}, app.route))

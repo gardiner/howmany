@@ -1,12 +1,22 @@
 %script#howmany_html(type="x-template")
+    %h3 Visits
+
+    %chart(label="Number of Visits" type="linechart" :values="visits.timeline")
+    %chart.half(label="Length [No. of Clicks]" type="barchart" :values="visits.views")
+    %chart.half(label="Length [Time]" type="barchart" :values="visits.durations")
+    %valuetable(:definition="visits.entryurls.definition" :values="visits.entryurls.values")
+    %valuetable(:definition="visits.exiturls.definition" :values="visits.exiturls.values")
+
+
     .details(v-if="route")
         %p(v-if="route.view") Details for view: "{{ route.view }}"
         %p(v-if="route.referer") Details for referrer: "{{ route.referer }}"
         %a.clickable(v-on:click="route = null") Back to Overview
 
+
     %h3 Views
 
-    %chart(label="View History" type="timeline" :values="views.timeline")
+    %chart(label="Number of Views" type="linechart" :values="views.timeline")
     %valuetable(:definition="views.definition" :values="views.values")
 
 
