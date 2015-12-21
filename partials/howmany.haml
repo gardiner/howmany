@@ -1,7 +1,7 @@
 %script#howmany_html(type="x-template")
     %h3 Visits
 
-    %chart(label="Number of Visits" type="linechart" :values="visits.timeline")
+    %chart(label="Daily Visits" type="linechart" :values="visits.timeline")
     %chart.half(label="Length [Number of Clicks]" type="barchart" :values="visits.views")
     %chart.half(label="Length [Time]" type="barchart" :values="visits.durations")
     %valuetable(:definition="visits.entryurls.definition" :values="visits.entryurls.values")
@@ -16,7 +16,7 @@
 
     %h3 Views
 
-    %chart(label="Number of Views" type="linechart" :values="views.timeline")
+    %chart(label="Daily Views" type="linechart" :values="views.timeline")
     %valuetable(:definition="views.definition" :values="views.values")
 
 
@@ -30,7 +30,9 @@
 
     %h3 User Agents
 
-    %chart(label="User Agents" type="piechart" :values="useragents.values")
+    %chart.half(label="Platforms" type="piechart" :values="platforms.values")
+    %chart.half(label="User Agents" type="piechart" :values="useragents.values")
+    %valuetable(:definition="platforms.definition" :values="platforms.values")
     %valuetable(:definition="useragents.definition" :values="useragents.values")
 
 

@@ -66,6 +66,13 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
                 {label: 'User Agent', value: 'label'}
             ],
             values: []
+        },
+        platforms: {
+            definition: [
+                {label: '#', value: 'value'},
+                {label: 'Platform', value: 'label'}
+            ],
+            values: []
         }
     };
 
@@ -78,6 +85,21 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
     });
 
 
+    //visits are currently not adjusted by view/referer
+    utils.api($.extend({endpoint: 'visits'}, app.route))
+    .then(function(response) {
+        var timeline = utils.prepare_timeline(response.timeline, 'day', 'count'),
+            views = utils.prepare_histogram(response.views, 'viewcount', 'count'),
+            durations = utils.prepare_histogram(response.durations, 'duration', 'count');
+
+        model.visits.timeline = charts.values2xy(timeline, 'time', 'value');
+        model.visits.views = charts.values2xy(views, 'bin', 'value');
+        model.visits.durations = charts.values2xy(durations, function(i) { return utils.format_duration(parseInt(i.bin)); }, 'value');
+        model.visits.entryurls.values = response.entryurls;
+        model.visits.exiturls.values = response.exiturls;
+    });
+
+
     app.$watch('route', function() {
         utils.api($.extend({endpoint: 'views'}, app.route))
         .then(function(response) {
@@ -85,19 +107,6 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
 
             model.views.timeline = charts.values2xy(timeline, 'time', 'value');
             model.views.values = response.views;
-        });
-
-        utils.api($.extend({endpoint: 'visits'}, app.route))
-        .then(function(response) {
-            var timeline = utils.prepare_timeline(response.timeline, 'day', 'count'),
-                views = utils.prepare_histogram(response.views, 'viewcount', 'count'),
-                durations = utils.prepare_histogram(response.durations, 'duration', 'count');
-
-            model.visits.timeline = charts.values2xy(timeline, 'time', 'value');
-            model.visits.views = charts.values2xy(views, 'bin', 'value');
-            model.visits.durations = charts.values2xy(durations, function(i) { return utils.format_duration(parseInt(i.bin)); }, 'value');
-            model.visits.entryurls.values = response.entryurls;
-            model.visits.exiturls.values = response.exiturls;
         });
 
         utils.api($.extend({endpoint: 'referers'}, app.route))
@@ -116,12 +125,19 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
 
         utils.api($.extend({endpoint: 'useragents'}, app.route))
         .then(function(response) {
-            model.useragents.values = _.map(response.useragents, function(i, n) {
-                return {
-                    value: parseInt(i.count),
-                    label: utils.format_useragent(i.useragent)
-                };
-            });
+            var useragents = _.map(response.useragents, function(i) {
+                    var parsed = utils.parse_useragent(i.useragent),
+                        label = utils.format_useragent(parsed);
+                    return { value: parseInt(i.count), useragent: parsed, label: label };
+                }),
+                platforms = _.groupBy(useragents, function(i) { return i.useragent.platform ? i.useragent.platform: 'Unknown'; }),
+                counted_platforms = _.map(platforms, function(value, key) {
+                    var sum = _.sum(value, 'value');
+                    return { value: sum, label: key };
+                });
+
+            model.useragents.values = useragents;
+            model.platforms.values = _.sortByOrder(counted_platforms, ['value'], ['desc']);
         });
     }, {immediate: true});
 });

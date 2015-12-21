@@ -40,21 +40,26 @@ define(['jquery', 'lodash', 'moment', 'q', 'howmany.config'], function($, _, mom
             }
         },
 
-        format_useragent: function(useragent) {
-            var parsed,
-                label = useragent;
-
-            if (useragent && useragent.substr(0, 1) === '{') {
-                parsed = $.parseJSON(useragent);
-                label = parsed.browser;
-                if (parsed.version) {
-                    label += ' ' + parsed.version;
-                }
-                if (parsed.platform) {
-                    label += ' (' + parsed.platform + ')';
-                }
+        /**
+         * Parses the useragent value json format. If no json is detected, the
+         * useragent is returned as the 'browser' field.
+         */
+        parse_useragent: function(useragent_repr) {
+            if (useragent_repr && useragent_repr.substr(0, 1) === '{') {
+                return $.parseJSON(useragent_repr);
+            } else {
+                return {browser: useragent_repr, platform: null, version: null};
             }
+        },
 
+        format_useragent: function(useragent) {
+            var label = useragent.browser;
+            if (useragent.version) {
+                label += ' ' + useragent.version;
+            }
+            if (useragent.platform) {
+                label += ' (' + useragent.platform + ')';
+            }
             return label;
         }
     };
