@@ -1,7 +1,8 @@
 define(['jquery', 'lodash', 'moment', 'q', 'howmany.config'], function($, _, moment, q, config) {
     "use strict";
+    var utils;
 
-    return {
+    return utils = {
         api: function(params) {
             var deferred = q.defer(),
                 url = config.api.base || '',
@@ -29,6 +30,15 @@ define(['jquery', 'lodash', 'moment', 'q', 'howmany.config'], function($, _, mom
 
         is_internal: function(url) {
             return url.indexOf('://' + config.servername) !== -1;
+        },
+
+        round: function(value, places) {
+            var coeff = Math.pow(10, places ? places : 2);
+            return Math.round(value * coeff) / coeff;
+        },
+
+        format_percent: function(value) {
+            return utils.round(value * 100, 1) + ' %';
         },
 
         format_duration: function(seconds) {

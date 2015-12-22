@@ -18,14 +18,17 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
     model = {
         route: null,
         views: {
+            stats: {},
             definition: [
                 {label: '#', value: 'count'},
+                {label: '%', value: function(r) { return utils.format_percent(r.count / model.views.stats.total); }},
                 {label: 'URL', value: 'url', class_: 'clickable', click: function(row) { model.route = { view: row.url }; }}
             ],
             values: [],
             timeline: {}
         },
         visits: {
+            stats: {},
             entryurls: {
                 definition: [
                     {label: '#', value: 'count'},
@@ -45,9 +48,11 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
             durations: {}
         },
         referrers: {
+            stats: {},
             external: {
                 definition: [
                     {label: '#', value: 'value'},
+                    {label: '%', value: function(r) { return utils.format_percent(r.value / model.referrers.stats.external); }},
                     {label: 'External Referrer', value: 'label', class_: 'clickable', click: function(row) { model.route = { referer: row.label }; }}
                 ],
                 values: []
@@ -55,14 +60,17 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
             internal: {
                 definition: [
                     {label: '#', value: 'value'},
+                    {label: '%', value: function(r) { return utils.format_percent(r.value / model.referrers.stats.internal); }},
                     {label: 'Internal Referrer', value: 'label', class_: 'clickable', click: function(row) { model.route = { referer: row.label }; }}
                 ],
                 values: []
             },
         },
         useragents: {
+            stats: {},
             definition: [
                 {label: '#', value: 'value'},
+                {label: '%', value: function(r) { return utils.format_percent(r.value / model.useragents.stats.total); }},
                 {label: 'User Agent', value: 'label'}
             ],
             values: []
@@ -70,6 +78,7 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
         platforms: {
             definition: [
                 {label: '#', value: 'value'},
+                {label: '%', value: function(r) { return utils.format_percent(r.value / model.useragents.stats.total); }},
                 {label: 'Platform', value: 'label'}
             ],
             values: []
@@ -97,6 +106,7 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
         model.visits.durations = charts.values2xy(durations, function(i) { return utils.format_duration(parseInt(i.bin)); }, 'value');
         model.visits.entryurls.values = response.entryurls;
         model.visits.exiturls.values = response.exiturls;
+        model.visits.stats = response.stats;
     });
 
 
@@ -107,6 +117,7 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
 
             model.views.timeline = charts.values2xy(timeline, 'time', 'value');
             model.views.values = response.views;
+            model.views.stats = response.stats;
         });
 
         utils.api($.extend({endpoint: 'referers'}, app.route))
@@ -114,13 +125,16 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
             var mapped = _.map(response.referers, function(i) {
                     return {
                         value: parseInt(i.count),
-                        label: i.referer || 'Unknown'
+                        label: (i.referer && i.referer != '') ? i.referer : 'Unknown'
                     };
                 }),
-                split = _.partition(mapped, function(i) { return utils.is_internal(i.label); });
+                split = _.partition(mapped, function(i) { return utils.is_internal(i.label); }),
+                sum_internal = _.sum(split[0], 'value'),
+                sum_external = _.sum(split[1], 'value');
 
             model.referrers.internal.values = split[0];
             model.referrers.external.values = split[1];
+            model.referrers.stats = {total: sum_internal + sum_external, internal: sum_internal, external: sum_external};
         });
 
         utils.api($.extend({endpoint: 'useragents'}, app.route))
@@ -138,6 +152,7 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
 
             model.useragents.values = useragents;
             model.platforms.values = _.sortByOrder(counted_platforms, ['value'], ['desc']);
+            model.useragents.stats = response.stats;
         });
     }, {immediate: true});
 });

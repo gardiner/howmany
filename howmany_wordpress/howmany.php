@@ -82,6 +82,7 @@ class HowMany {
         switch ($endpoint) {
             case 'views':
                 $result = array(
+                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME, 'url LIKE %s AND referer LIKE %s', array($view, $referer))[0],
                     "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($view, $referer)),
                     "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60*60*24)) * (60*60*24) day, count(*) views', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($view, $referer)),
                 );
@@ -91,6 +92,7 @@ class HowMany {
                     /*
                     "visits" => $db->load_all_extended('visit, count(id) views, min(time) starttime, max(time) endtime, max(time)-min(time) duration, floor(time/(60*60*24))*(60*60*24) day', HM_LOGTABLENAME, 'TRUE GROUP BY visit'),
                     */
+                    "stats" => $db->load_all_extended('count(distinct visit) total', HM_LOGTABLENAME)[0],
                     "timeline" => $db->load_all_extended('count(v.visit) count, v.day' ,'(SELECT l.visit, floor(l.time / (60*60*24)) * (60*60*24) day FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) v', 'TRUE GROUP BY v.day'),
                     "entryurls" => $db->load_all_extended('count(visit) count, entryurl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time ASC SEPARATOR \'\n\'), \'\n\', 1) entryurl FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) entryurls', 'TRUE GROUP BY entryurl ORDER BY count DESC'),
                     "exiturls" => $db->load_all_extended('count(visit) count, exiturl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time DESC SEPARATOR \'\n\'), \'\n\', 1) exiturl FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) exiturls', 'TRUE GROUP BY exiturl ORDER BY count DESC'),
@@ -100,12 +102,13 @@ class HowMany {
                 break;
             case 'useragents':
                 $result = array(
+                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME, 'url LIKE %s AND referer LIKE %s', array($view, $referer))[0],
                     "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($view, $referer)),
                 );
                 break;
             case 'referers':
                 $result = array(
-                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s AND l.referer IS NOT NULL AND l.referer != "" GROUP BY l.referer ORDER BY count DESC', array($view, $referer)),
+                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.referer ORDER BY count DESC', array($view, $referer)),
                 );
                 break;
 
