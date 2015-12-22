@@ -51,8 +51,8 @@
                 %tr(v-for="row in hidden_values")
                     %td(v-for="column in definition" :class="column.class_" v-on:click="click(column.click, row)") {{ render(column.value, row) }}
         %a.clickable{"v-if"=>"hidden_values.length", "@click"=>"show_hidden = !show_hidden"}
-            %span(v-if="!show_hidden") Alle anzeigen
-            %span(v-if="show_hidden") Untere ausblenden
+            %span(v-if="!show_hidden") Show all
+            %span(v-if="show_hidden") Show less
 
 
 
