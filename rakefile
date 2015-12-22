@@ -38,8 +38,21 @@ end
 
 desc 'Packages plugins'
 task :package => [:compile] do |t|
-    sh "mkdir ./-package" if not File.exist? './-package'
-    sh "rsync -vr --copy-links --exclude='-wp' howmany_wordpress ./-package/"
+    target = "./-package/howmany_wordpress_#{current_version}"
+    sh "rm -rf #{target}" if File.exist? target
+    sh "mkdir -p #{target}" if not File.exist? target
+    sh "rsync -vr --copy-links --exclude='-wp' howmany_wordpress/ #{target}"
+end
+
+
+desc 'Bump version. Use with caution, might change unrelated code areas'
+task :version, :version do |t, args|
+    new_version = args[:version]
+    ['bower.json', 'howmany_wordpress/howmany.php'].each { |f|
+        updated = File.open(f).read.gsub(current_version, new_version)
+        File.open(f, 'w').write(updated)
+    }
+    File.open('VERSION', 'w').write(new_version)
 end
 
 
@@ -63,4 +76,9 @@ def listen
         puts "Changed #{changed}"
         sh "rake compile"
     end.start
+end
+
+
+def current_version
+    (File.exist? 'VERSION') ? File.open('VERSION').read.strip : "0.0.1"
 end
