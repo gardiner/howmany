@@ -3,14 +3,14 @@
 Plugin Name: HowMany
 Plugin URI: ...
 Description: Simple Website Statistics
-Version: 0.0.6
+Version: 0.0.7
 Author: Ole Trenner
 Author URI: http://www.3dbits.de
 License: custom
 */
 
 
-define("HM_VERSION", "0.0.6");
+define("HM_VERSION", "0.0.7");
 define("HM_DBVERSION", 2);
 
 define("HM_BASE", basename(dirname(__FILE__)));
@@ -31,6 +31,8 @@ foreach (glob(HM_PATH . "/inc/*.php") as $filename) {
 
 
 class HowMany {
+    protected $days_limit = 14;
+
     public function __construct() {
         if (function_exists('add_action')) {
             //backend functionality
@@ -74,6 +76,7 @@ class HowMany {
                     "action" => "hm_api",
                 ),
             ),
+            "days_limit" => $this->days_limit,
         ));
         include('views/adminpage.html');
     }
@@ -84,12 +87,13 @@ class HowMany {
         $endpoint = isset($_REQUEST['endpoint']) ? $_REQUEST['endpoint'] : false;
         $view = isset($_REQUEST['view']) ? $_REQUEST['view'] : '%';
         $referer = isset($_REQUEST['referer']) ? $_REQUEST['referer'] : '%';
+        $limit = time() - ($this->days_limit * 24 * 60 * 60); //backlog
         switch ($endpoint) {
             case 'views':
                 $result = array(
-                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME, 'url LIKE %s AND referer LIKE %s', array($view, $referer))[0],
-                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($view, $referer)),
-                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60*60*24)) * (60*60*24) day, count(*) views', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($view, $referer)),
+                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s', array($limit, $view, $referer))[0],
+                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($limit, $view, $referer)),
+                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60*60*24)) * (60*60*24) day, count(*) views', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($limit, $view, $referer)),
                 );
                 break;
             case 'visits':
@@ -97,23 +101,23 @@ class HowMany {
                     /*
                     "visits" => $db->load_all_extended('visit, count(id) views, min(time) starttime, max(time) endtime, max(time)-min(time) duration, floor(time/(60*60*24))*(60*60*24) day', HM_LOGTABLENAME, 'TRUE GROUP BY visit'),
                     */
-                    "stats" => $db->load_all_extended('count(distinct visit) total', HM_LOGTABLENAME)[0],
-                    "timeline" => $db->load_all_extended('count(v.visit) count, v.day' ,'(SELECT l.visit, floor(l.time / (60*60*24)) * (60*60*24) day FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) v', 'TRUE GROUP BY v.day'),
-                    "entryurls" => $db->load_all_extended('count(visit) count, entryurl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time ASC SEPARATOR \'\n\'), \'\n\', 1) entryurl FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) entryurls', 'TRUE GROUP BY entryurl ORDER BY count DESC'),
-                    "exiturls" => $db->load_all_extended('count(visit) count, exiturl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time DESC SEPARATOR \'\n\'), \'\n\', 1) exiturl FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) exiturls', 'TRUE GROUP BY exiturl ORDER BY count DESC'),
-                    "views" => $db->load_all_extended('viewcount, count(viewcount) count', '(SELECT l.visit, count(l.url) viewcount FROM ' . HM_LOGTABLENAME . ' l GROUP BY l.visit) viewcounts', 'TRUE GROUP BY viewcount LIMIT 15'),
-                    "durations" => $db->load_all_extended('duration, count(duration) count', '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . HM_LOGTABLENAME . ' l GROUP BY visit) durations', 'TRUE GROUP BY duration LIMIT 15'),
+                    "stats" => $db->load_all_extended('count(distinct visit) total', HM_LOGTABLENAME . ' l', 'l.time > %d', array($limit))[0],
+                    "timeline" => $db->load_all_extended('count(v.visit) count, v.day' ,'(SELECT l.visit, floor(l.time / (60*60*24)) * (60*60*24) day FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) v', 'TRUE GROUP BY v.day', array($limit)),
+                    "entryurls" => $db->load_all_extended('count(visit) count, entryurl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time ASC SEPARATOR \'\n\'), \'\n\', 1) entryurl FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) entryurls', 'TRUE GROUP BY entryurl ORDER BY count DESC', array($limit)),
+                    "exiturls" => $db->load_all_extended('count(visit) count, exiturl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time DESC SEPARATOR \'\n\'), \'\n\', 1) exiturl FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) exiturls', 'TRUE GROUP BY exiturl ORDER BY count DESC', array($limit)),
+                    "views" => $db->load_all_extended('viewcount, count(viewcount) count', '(SELECT l.visit, count(l.url) viewcount FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) viewcounts', 'TRUE GROUP BY viewcount LIMIT 15', array($limit)),
+                    "durations" => $db->load_all_extended('duration, count(duration) count', '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY visit) durations', 'TRUE GROUP BY duration LIMIT 15', array($limit)),
                 );
                 break;
             case 'useragents':
                 $result = array(
-                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME, 'url LIKE %s AND referer LIKE %s', array($view, $referer))[0],
-                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($view, $referer)),
+                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME, 'l.time > %d AND url LIKE %s AND referer LIKE %s', array($limit, $view, $referer))[0],
+                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($limit, $view, $referer)),
                 );
                 break;
             case 'referers':
                 $result = array(
-                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.url LIKE %s AND l.referer LIKE %s GROUP BY l.referer ORDER BY count DESC', array($view, $referer)),
+                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.referer ORDER BY count DESC', array($limit, $view, $referer)),
                 );
                 break;
 
@@ -180,7 +184,7 @@ class HowMany {
                 $db->query('ALTER TABLE ' . HM_LOGTABLENAME . ' ADD visit int');
                 $this->regenerate_visits();
             } else if ($dbversion != $currentversion) {
-                $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096))');
+                $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096), visit int)');
             }
             update_option('hm_dbversion', $currentversion);
         }

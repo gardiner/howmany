@@ -1,6 +1,6 @@
 %script#howmany_html(type="x-template")
 
-    %h3 Visits ({{ visits.stats.total }} total)
+    %h3 Visits in last {{ config.days_limit }} days ({{ visits.stats.total }} total)
 
     %chart(label="Daily Visits" type="linechart" :values="visits.timeline")
     %chart.half(label="Length [Number of Clicks]" type="barchart" :values="visits.views")
@@ -15,13 +15,13 @@
         %a.clickable(v-on:click="route = null") Show all
 
 
-    %h3 Views ({{ views.stats.total }} total)
+    %h3 Views in last {{ config.days_limit }} days ({{ views.stats.total }} total)
 
     %chart(label="Daily Views" type="linechart" :values="views.timeline")
     %valuetable(:definition="views.definition" :values="views.values")
 
 
-    %h3 Referrers ({{ referrers.stats.internal }} internal, {{ referrers.stats.external }} external)
+    %h3 Referrers in last {{ config.days_limit }} days ({{ referrers.stats.internal }} internal, {{ referrers.stats.external }} external)
 
     %chart.half(label="External Referrers" type="piechart" :values="referrers.external.values")
     %chart.half(label="Internal Referrers" type="piechart" :values="referrers.internal.values")
@@ -29,7 +29,7 @@
     %valuetable(:definition="referrers.internal.definition" :values="referrers.internal.values")
 
 
-    %h3 User Agents
+    %h3 User Agents in last {{ config.days_limit }} days
 
     %chart.half(label="Platforms" type="piechart" :values="platforms.values")
     %chart.half(label="User Agents" type="piechart" :values="useragents.values")

@@ -11,7 +11,8 @@ define(['jquery'], function($) {
             TIMELINE_DAYS: 15,
 
             //default configuration
-            root: $container.find('.root').get(0)
+            root: $container.find('.root').get(0),
+            days_limit: 0
         };
 
     return $.extend(defaults, $.parseJSON($container.attr('data-options') || '{}'));

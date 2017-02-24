@@ -17,6 +17,7 @@ requirejs(['jquery', 'lodash', 'Vue', 'moment', 'howmany.charts', 'howmany.compo
 
     model = {
         route: null,
+        config: config,
         views: {
             stats: {},
             definition: [
