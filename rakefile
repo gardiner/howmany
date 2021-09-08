@@ -1,81 +1,44 @@
-require 'rake/clean'
 include Rake::DSL
-
-
-ROOT = File.dirname(__FILE__)
-NAME = File.basename(ROOT)
 
 
 task :default => [:watch]
 
 
-HAML = FileList['**/*.haml']
-HTML = HAML.ext('html')
-SCSS = FileList['css/*.scss']
-CSS = SCSS.ext('css')
-
-
-CLEAN.include HTML + CSS
-
-
 desc 'Compiles HAML and SCSS resources'
-task :compile => HTML + CSS
+task :compile_prod do
+    sh "npx gulp compile_prod"
+end
 
 
 desc 'Watches the site directory and regenerates when files change'
-task :watch => [:compile] do |t, args|
-    listen
-    sleep
+task :watch do
+    sh "npx gulp watch"
 end
 
 
 desc 'Starts wordpress dev server'
-task :wordpress => [:compile] do |t|
-    listen
-    sh "cd howmany_wordpress/-wp && wp server"
+task :wordpress do
+    sh "cd ./-wp && wp server"
 end
 
 
 desc 'Packages plugins'
-task :package => [:compile] do |t|
+task :package => [:compile] do
     target = "./-package/howmany_wordpress_#{current_version}"
     sh "rm -rf #{target}" if File.exist? target
     sh "mkdir -p #{target}" if not File.exist? target
-    sh "rsync -vr --copy-links --exclude='-wp' howmany_wordpress/ #{target}"
+    sh "rsync -vr --copy-links howmany_wordpress/ #{target}"
 end
 
 
 desc 'Bump version. Use with caution, might change unrelated code areas'
-task :version, :version do |t, args|
+task :version, :version do
     new_version = args[:version]
-    ['bower.json', 'howmany_wordpress/howmany.php'].each { |f|
+    ['package.json', 'howmany_wordpress/howmany.php'].each { |f|
         updated = File.open(f).read.gsub(current_version, new_version)
         File.open(f, 'w').write(updated)
     }
     File.open('VERSION', 'w').write(new_version)
-end
-
-
-rule '.html' => '.haml' do |t|
-    puts "Rebuilding #{t.name}"
-    sh "haml -I \"lib\" -r \"php.rb\" \"#{t.source}\" \"#{t.name}\"" do |ok, res| end
-end
-
-
-rule '.css' => '.scss' do |t|
-    puts "Rebuilding #{t.name}"
-    sh "sass #{t.source} #{t.name}" do |ok, res| end
-end
-
-
-def listen
-    require 'listen'
-    Listen.to("partials", "css", "howmany_wordpress/views", :relative_paths => true, :only => /\.(haml|scss)$/) do |mod, add, rem|
-        changed = mod or add or rem
-        changed = changed.first.to_s
-        puts "Changed #{changed}"
-        sh "rake compile"
-    end.start
 end
 
 

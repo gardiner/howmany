@@ -1,0 +1,36 @@
+.howmany_app
+    h3 Visits in last {{ config.days_limit }} days ({{ visits.stats.total }} total)
+
+    chart(label="Daily Visits" type="linechart" :values="visits.timeline")
+    chart.half(label="Length [Number of Clicks]" type="barchart" :values="visits.views")
+    chart.half(label="Length [Time]" type="barchart" :values="visits.durations")
+    valuetable(:definition="visits.entryurls.definition" :values="visits.entryurls.values")
+    valuetable(:definition="visits.exiturls.definition" :values="visits.exiturls.values")
+
+
+    .details(v-if="route")
+        .title(v-if="route.view") Details for view <span class="url">{{ route.view }}</span>
+        .title(v-if="route.referer") Details for referrer <span class="url">{{ route.referer }}</span>
+        a.clickable(v-on:click="route = null") Show all
+
+
+    h3 Views in last {{ config.days_limit }} days ({{ views.stats.total }} total)
+
+    chart(label="Daily Views" type="linechart" :values="views.timeline")
+    valuetable(:definition="views.definition" :values="views.values")
+
+
+    h3 Referrers in last {{ config.days_limit }} days ({{ referrers.stats.internal }} internal, {{ referrers.stats.external }} external)
+
+    chart.half(label="External Referrers" type="piechart" :values="referrers.external.values")
+    chart.half(label="Internal Referrers" type="piechart" :values="referrers.internal.values")
+    valuetable(:definition="referrers.external.definition" :values="referrers.external.values")
+    valuetable(:definition="referrers.internal.definition" :values="referrers.internal.values")
+
+
+    h3 User Agents in last {{ config.days_limit }} days
+
+    chart.half(label="Platforms" type="piechart" :values="platforms.values")
+    chart.half(label="User Agents" type="piechart" :values="useragents.values")
+    valuetable(:definition="platforms.definition" :values="platforms.values")
+    valuetable(:definition="useragents.definition" :values="useragents.values")

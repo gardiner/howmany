@@ -51,15 +51,8 @@ class HowMany {
         if (!$current_screen || $current_screen->id != 'toplevel_page_hm_overview') {
             return;
         }
-        wp_enqueue_style('howmany', HM_URL . '/css/howmany.css');
-        wp_enqueue_script('requirejs', HM_URL . '/bower_components/requirejs/require.js', array('jquery'));
-        wp_localize_script('requirejs', 'require', array(
-            'baseUrl' => HM_URL,
-            'deps'    => array(
-                HM_URL . '/js/jquery.compat.js',
-                HM_URL . '/js/howmany.js',
-            )
-        ));
+        wp_enqueue_style('howmany_css', HM_URL . '/css/howmany.css');
+        wp_enqueue_script('howmany_js', HM_URL . '/js/howmany.all.js');
     }
 
     public function init_menus() {

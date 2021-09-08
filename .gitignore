@@ -1,9 +1,9 @@
 .sass-cache
 .DS_Store
 -*
-css/*.css
-css/*.css.map
-partials/*.html
+howmany_wordpress/css/*.css*
+howmany_wordpress/js/*.js
+howmany_wordpress/partials/*.html
 howmany_wordpress/views/*.html
 howmany_wordpress/vendor
-bower_components
+node_modules
