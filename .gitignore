@@ -2,7 +2,7 @@
 .DS_Store
 -*
 howmany_wordpress/css/*.css*
-howmany_wordpress/js/*.js
+howmany_wordpress/js/*.js*
 howmany_wordpress/partials/*.html
 howmany_wordpress/views/*.html
 howmany_wordpress/vendor

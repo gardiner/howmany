@@ -223,12 +223,12 @@ $(function() {
                             }),
                             platforms = _.groupBy(useragents, function(i) { return i.useragent.platform ? i.useragent.platform: 'Unknown'; }),
                             counted_platforms = _.map(platforms, function(value, key) {
-                                var sum = _.sum(value, 'value');
+                                var sum = _.sumBy(value, 'value');
                                 return { value: sum, label: key };
                             });
 
                         self.useragents.values = useragents;
-                        self.platforms.values = _.sortByOrder(counted_platforms, ['value'], ['desc']);
+                        self.platforms.values = _.orderBy(counted_platforms, ['value'], ['desc']);
                         self.useragents.stats = response.stats;
                     });
                 }, {immediate: true});

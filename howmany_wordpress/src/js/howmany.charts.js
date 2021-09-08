@@ -62,7 +62,7 @@ function linechart(canvasElement, data) {
 
 function piechart(canvasElement, data) {
     var reduced = [],
-        sum = _.sum(data, function(i) { return i.value; }),
+        sum = _.sumBy(data, function(i) { return i.value; }),
         other = 0;
 
     _.each(data, function(i) {

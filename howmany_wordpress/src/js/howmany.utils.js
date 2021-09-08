@@ -15,14 +15,14 @@ var utils = {
     },
 
     prepare_timeline: function(timeline, time_field, value_field) {
-        var values = _.groupBy(timeline, function(i) { return moment.unix(i[time_field]).dayOfYear(); }),
+        var values = _.keyBy(timeline, function(i) { return moment.unix(i[time_field]).dayOfYear(); }),
             today = moment();
 
         return _.times(config.TIMELINE_DAYS, function(i) {
             var day = today.clone().subtract(config.TIMELINE_DAYS - i - 1, 'days'),
                 timestamp = day.unix(),
                 key = day.dayOfYear(),
-                value = values.hasOwnProperty(key.toString()) ? values[key.toString()][value_field] : 0;
+                value = _.get(values, [key, value_field]) || 0;
             return {time: moment.unix(timestamp).format(config.DATEFORMAT), value: value};
         });
     },

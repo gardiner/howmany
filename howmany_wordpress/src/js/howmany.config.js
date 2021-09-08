@@ -10,7 +10,7 @@ var config = {
         ALWAYS_VISIBLE_ROWS: 10,
         COLORS: ['#274060', '#335C81', '#65AFFF', '#1B2845', '#5899E2'],
         PIECHART_THRESHOLD: 0.015,
-        TIMELINE_DAYS: 15,
+        TIMELINE_DAYS: 20,
 
         //default configuration
         days_limit: 0
