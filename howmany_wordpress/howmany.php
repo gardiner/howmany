@@ -104,7 +104,7 @@ class HowMany {
                 break;
             case 'useragents':
                 $result = array(
-                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME, 'l.time > %d AND url LIKE %s AND referer LIKE %s', array($limit, $view, $referer))[0],
+                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME . ' l', 'l.time > %d AND url LIKE %s AND referer LIKE %s', array($limit, $view, $referer))[0],
                     "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($limit, $view, $referer)),
                 );
                 break;
