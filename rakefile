@@ -23,7 +23,7 @@ end
 
 
 desc 'Packages plugins'
-task :package => [:compile] do
+task :package => [:compile_prod] do
     target = "./-package/howmany_wordpress_#{current_version}"
     sh "rm -rf #{target}" if File.exist? target
     sh "mkdir -p #{target}" if not File.exist? target
@@ -32,8 +32,8 @@ end
 
 
 desc 'Bump version. Use with caution, might change unrelated code areas'
-task :version, :version do
-    new_version = args[:version]
+task :version do
+    new_version = ENV['version']
     ['package.json', 'howmany_wordpress/howmany.php'].each { |f|
         updated = File.open(f).read.gsub(current_version, new_version)
         File.open(f, 'w').write(updated)

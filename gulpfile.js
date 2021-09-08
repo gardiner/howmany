@@ -11,7 +11,7 @@ var webpackcompiler = require('webpack');
 var webpack = require('webpack-stream');
 var webserver = require('gulp-webserver');
 
-var develop = process.env.production != 'true';
+var develop = process.env.prod != 'true';
 
 gulp.task('scss', function() {
     return gulp.src('howmany_wordpress/src/scss/**/*.scss')
@@ -62,7 +62,7 @@ gulp.task('js', function() {
 gulp.task('compile', gulp.parallel('pug', 'scss', 'js'));
 
 gulp.task('compile_prod', gulp.series(async function() {
-    prod = true;
+    develop = false;
 }, 'compile'));
 
 gulp.task('watch', gulp.series('compile', async function() {

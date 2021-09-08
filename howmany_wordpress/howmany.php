@@ -3,14 +3,14 @@
 Plugin Name: HowMany
 Plugin URI: ...
 Description: Simple Website Statistics
-Version: 0.0.7
+Version: 0.1.0
 Author: Ole Trenner
 Author URI: http://www.3dbits.de
 License: custom
 */
 
 
-define("HM_VERSION", "0.0.7");
+define("HM_VERSION", "0.1.0");
 define("HM_DBVERSION", 2);
 
 define("HM_BASE", basename(dirname(__FILE__)));
