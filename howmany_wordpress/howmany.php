@@ -132,9 +132,18 @@ class HowMany {
             return;
         }
 
+        $url = $_SERVER['REQUEST_URI'];
+
+        if (preg_match("/^\/robots\.txt/i", $url) ||
+            preg_match("/^\/sitemap\.xml/i",  $url) ||
+            preg_match("/^\/wp-sitemap/i",  $url) ||
+            preg_match("/^\/wp-admin/i", $url) ||
+            preg_match("/^\/wp-json/i", $url)) {
+            return;
+        }
+
         $now = time();
         $fingerprint = $this->generate_fingerprint($_SERVER);
-        $url = $_SERVER['REQUEST_URI'];
         $referer = $_SERVER['HTTP_REFERER'];
         $ua = json_encode(parse_user_agent());
 
