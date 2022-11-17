@@ -144,8 +144,12 @@ class HowMany {
 
         $now = time();
         $fingerprint = $this->generate_fingerprint($_SERVER);
-        $referer = $_SERVER['HTTP_REFERER'];
-        $ua = json_encode(parse_user_agent());
+        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        try {
+            $ua = json_encode(parse_user_agent());
+        } catch (Exception $e) {
+            $ua = '{"_status": "unknown user agent"}';
+        }
 
         $db = new HMDatabase();
         $db->query('INSERT INTO ' . HM_LOGTABLENAME . ' ' .
