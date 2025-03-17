@@ -25,7 +25,7 @@ gulp.task('pug', function() {
 });
 
 gulp.task('js', function() {
-    return gulp.src('src/js/' + NAME + '.js')
+    return gulp.src('src/js/index.js')
     .pipe(webpack({
         resolve: {
             modules: [

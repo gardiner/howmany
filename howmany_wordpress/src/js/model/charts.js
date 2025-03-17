@@ -4,7 +4,7 @@ import $ from 'jquery';
 import _ from 'lodash';
 import Chart from 'chart.js';
 
-import config from './howmany.config';
+import config from 'config';
 
 
 //setup charts
