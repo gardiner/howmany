@@ -1,4 +1,4 @@
-.howmany_app
+.howmany.app
     h3 Visits in last {{ config.days_limit }} days ({{ visits.stats.total }} total)
 
     chart(label="Daily Visits" type="linechart" :values="visits.timeline")

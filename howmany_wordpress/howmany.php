@@ -196,7 +196,15 @@ class HowMany {
                 $db->query('ALTER TABLE ' . self::LOGTABLENAME . ' ADD visit int');
                 $this->regenerate_visits();
             } else if ($dbversion != $currentversion) {
-                $db->query('CREATE TABLE ' . self::LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096), visit int)');
+                $db->query('CREATE TABLE ' . self::LOGTABLENAME . ' (' .
+                                'id bigint(20) PRIMARY KEY AUTO_INCREMENT,' .
+                                'time int,' .
+                                'fingerprint varchar(10),' .
+                                'url varchar(4096),' .
+                                'referer varchar(4096),' .
+                                'useragent varchar(4096),' .
+                                'visit int' .
+                           ')');
             }
             update_option('hm_dbversion', $currentversion);
         }
