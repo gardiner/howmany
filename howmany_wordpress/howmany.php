@@ -134,7 +134,9 @@ class HowMany {
         if (preg_match("/^\/robots\.txt/i", $url) ||
             preg_match("/^\/sitemap\.xml/i",  $url) ||
             preg_match("/^\/wp-sitemap/i",  $url) ||
+            preg_match("/^\/wp-cron/i", $url) ||
             preg_match("/^\/wp-admin/i", $url) ||
+            preg_match("/^\/wp-login/i", $url) ||
             preg_match("/^\/wp-json/i", $url)) {
             return;
         }
