@@ -3,6 +3,13 @@
   "require": {
     "donatj/phpuseragentparser": "*"
   },
+  "autoload": {
+    "psr-4": {
+      "OleTrenner\\HowMany\\": [
+        "src/php/"
+      ]
+    }
+  },
   "extra": {
     "version": "0.1.0",
     "assets": {

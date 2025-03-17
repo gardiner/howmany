@@ -10,30 +10,24 @@ License: custom
 */
 
 
-define("HM_VERSION", "0.1.0");
-define("HM_DBVERSION", 2);
-
-define("HM_BASE", basename(dirname(__FILE__)));
-define("HM_URL", WP_PLUGIN_URL . "/" . HM_BASE);
-define("HM_PATH", WP_PLUGIN_DIR . "/" . HM_BASE);
-
-define('HM_LOGTABLENAME', 'howmany_log');
-define('MAXVISITLENGTH', 60 * 60);          //1 hour
-
+namespace OleTrenner\HowMany;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
 
-//autoloading all includes
-foreach (glob(HM_PATH . "/inc/*.php") as $filename) {
-    require_once($filename);
-}
-
-
 class HowMany {
+    const DBVERSION = 2;
+    const LOGTABLENAME = 'howmany_log';
+    const MAXVISITLENGTH = 60 * 60; //1 hour
+
     protected $days_limit = 14;
+    protected $BASE;
+    protected $ROOT;
 
     public function __construct() {
+        $this->ROOT = dirname(__FILE__) . '/';
+        $this->BASE = get_bloginfo('url') . '/wp-content/plugins/howmany_wordpress/';
+
         if (function_exists('add_action')) {
             //backend functionality
             add_action('admin_enqueue_scripts', array($this, 'init_admin_resources'));
@@ -51,8 +45,8 @@ class HowMany {
         if (!$current_screen || $current_screen->id != 'toplevel_page_hm_overview') {
             return;
         }
-        wp_enqueue_style('howmany_css', HM_URL . '/css/howmany.css');
-        wp_enqueue_script('howmany_js', HM_URL . '/js/howmany.all.js');
+        wp_enqueue_style('howmany_css', $this->url('css/howmany.css'));
+        wp_enqueue_script('howmany_js', $this->url('js/howmany.all.js'));
     }
 
     public function init_menus() {
@@ -60,6 +54,9 @@ class HowMany {
     }
 
     public function render_adminpage() {
+        $info = get_plugin_data(__FILE__);
+        $version = $info['Version'];
+
         $this->check_schema();
         $options = json_encode(array(
             "servername" => $_SERVER['SERVER_NAME'],    //will be used to determine external and internal referers
@@ -75,7 +72,7 @@ class HowMany {
     }
 
     public function api() {
-        $db = new HMDatabase();
+        $db = new Database();
 
         $endpoint = isset($_REQUEST['endpoint']) ? $_REQUEST['endpoint'] : false;
         $view = isset($_REQUEST['view']) ? $_REQUEST['view'] : '%';
@@ -84,33 +81,33 @@ class HowMany {
         switch ($endpoint) {
             case 'views':
                 $result = array(
-                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s', array($limit, $view, $referer))[0],
-                    "views" => $db->load_all_extended('l.url, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($limit, $view, $referer)),
-                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60*60*24)) * (60*60*24) day, count(*) views', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($limit, $view, $referer)),
+                    "stats" => $db->load_all_extended('count(*) total', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s', array($limit, $view, $referer))[0],
+                    "views" => $db->load_all_extended('l.url, count(l.id) count', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($limit, $view, $referer)),
+                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60*60*24)) * (60*60*24) day, count(*) views', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($limit, $view, $referer)),
                 );
                 break;
             case 'visits':
                 $result = array(
                     /*
-                    "visits" => $db->load_all_extended('visit, count(id) views, min(time) starttime, max(time) endtime, max(time)-min(time) duration, floor(time/(60*60*24))*(60*60*24) day', HM_LOGTABLENAME, 'TRUE GROUP BY visit'),
+                    "visits" => $db->load_all_extended('visit, count(id) views, min(time) starttime, max(time) endtime, max(time)-min(time) duration, floor(time/(60*60*24))*(60*60*24) day', self::LOGTABLENAME, 'TRUE GROUP BY visit'),
                     */
-                    "stats" => $db->load_all_extended('count(distinct visit) total', HM_LOGTABLENAME . ' l', 'l.time > %d', array($limit))[0],
-                    "timeline" => $db->load_all_extended('count(v.visit) count, v.day' ,'(SELECT l.visit, floor(l.time / (60*60*24)) * (60*60*24) day FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) v', 'TRUE GROUP BY v.day', array($limit)),
-                    "entryurls" => $db->load_all_extended('count(visit) count, entryurl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time ASC SEPARATOR \'\n\'), \'\n\', 1) entryurl FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) entryurls', 'TRUE GROUP BY entryurl ORDER BY count DESC', array($limit)),
-                    "exiturls" => $db->load_all_extended('count(visit) count, exiturl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time DESC SEPARATOR \'\n\'), \'\n\', 1) exiturl FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) exiturls', 'TRUE GROUP BY exiturl ORDER BY count DESC', array($limit)),
-                    "views" => $db->load_all_extended('viewcount, count(viewcount) count', '(SELECT l.visit, count(l.url) viewcount FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) viewcounts', 'TRUE GROUP BY viewcount LIMIT 15', array($limit)),
-                    "durations" => $db->load_all_extended('duration, count(duration) count', '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . HM_LOGTABLENAME . ' l WHERE l.time > %d GROUP BY visit) durations', 'TRUE GROUP BY duration LIMIT 15', array($limit)),
+                    "stats" => $db->load_all_extended('count(distinct visit) total', self::LOGTABLENAME . ' l', 'l.time > %d', array($limit))[0],
+                    "timeline" => $db->load_all_extended('count(v.visit) count, v.day' ,'(SELECT l.visit, floor(l.time / (60*60*24)) * (60*60*24) day FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) v', 'TRUE GROUP BY v.day', array($limit)),
+                    "entryurls" => $db->load_all_extended('count(visit) count, entryurl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time ASC SEPARATOR \'\n\'), \'\n\', 1) entryurl FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) entryurls', 'TRUE GROUP BY entryurl ORDER BY count DESC', array($limit)),
+                    "exiturls" => $db->load_all_extended('count(visit) count, exiturl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time DESC SEPARATOR \'\n\'), \'\n\', 1) exiturl FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) exiturls', 'TRUE GROUP BY exiturl ORDER BY count DESC', array($limit)),
+                    "views" => $db->load_all_extended('viewcount, count(viewcount) count', '(SELECT l.visit, count(l.url) viewcount FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) viewcounts', 'TRUE GROUP BY viewcount LIMIT 15', array($limit)),
+                    "durations" => $db->load_all_extended('duration, count(duration) count', '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY visit) durations', 'TRUE GROUP BY duration LIMIT 15', array($limit)),
                 );
                 break;
             case 'useragents':
                 $result = array(
-                    "stats" => $db->load_all_extended('count(*) total', HM_LOGTABLENAME . ' l', 'l.time > %d AND url LIKE %s AND referer LIKE %s', array($limit, $view, $referer))[0],
-                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($limit, $view, $referer)),
+                    "stats" => $db->load_all_extended('count(*) total', self::LOGTABLENAME . ' l', 'l.time > %d AND url LIKE %s AND referer LIKE %s', array($limit, $view, $referer))[0],
+                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($limit, $view, $referer)),
                 );
                 break;
             case 'referers':
                 $result = array(
-                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', HM_LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.referer ORDER BY count DESC', array($limit, $view, $referer)),
+                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.referer ORDER BY count DESC', array($limit, $view, $referer)),
                 );
                 break;
 
@@ -151,20 +148,27 @@ class HowMany {
             $ua = '{"_status": "unknown user agent"}';
         }
 
-        $db = new HMDatabase();
-        $db->query('INSERT INTO ' . HM_LOGTABLENAME . ' ' .
+        $db = new Database();
+        $db->query('INSERT INTO ' . self::LOGTABLENAME . ' ' .
                     '(time, fingerprint, url, referer, useragent, visit) ' .
                     'VALUES (' .
                         '%d, %s, %s, %s, %s,' .
                         '(SELECT COALESCE(' .
-                            '(SELECT MAX(l.visit) FROM ' . HM_LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
-                            '(SELECT MAX(ll.visit)+1 FROM ' . HM_LOGTABLENAME . ' ll),
+                            '(SELECT MAX(l.visit) FROM ' . self::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
+                            '(SELECT MAX(ll.visit)+1 FROM ' . self::LOGTABLENAME . ' ll),
                             1)' .
                         ')' .
                     ')',
-                    array($now, $fingerprint, $url, $referer, $ua, $fingerprint, $now, MAXVISITLENGTH));
+                    array($now, $fingerprint, $url, $referer, $ua, $fingerprint, $now, self::MAXVISITLENGTH));
     }
 
+    public function url($path) {
+        return $this->BASE . $path;
+    }
+
+    public function path($path) {
+        return $this->ROOT . $path;
+    }
 
     /**
      * Generates a more or less unique fingerprint from request data
@@ -180,33 +184,33 @@ class HowMany {
     }
 
     protected function check_schema() {
-        $db = new HMDatabase();
+        $db = new Database();
         $dbversion = get_option('hm_dbversion', 0);
-        $currentversion = HM_DBVERSION;
+        $currentversion = self::DBVERSION;
 
         if ($dbversion != $currentversion) {
             if ($dbversion == 1) {
                 //add missing visit column and populate it with values
-                $db->query('ALTER TABLE ' . HM_LOGTABLENAME . ' ADD visit int');
+                $db->query('ALTER TABLE ' . self::LOGTABLENAME . ' ADD visit int');
                 $this->regenerate_visits();
             } else if ($dbversion != $currentversion) {
-                $db->query('CREATE TABLE ' . HM_LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096), visit int)');
+                $db->query('CREATE TABLE ' . self::LOGTABLENAME . ' (id bigint(20) PRIMARY KEY AUTO_INCREMENT, time int, fingerprint varchar(10), url varchar(4096), referer varchar(4096), useragent varchar(4096), visit int)');
             }
             update_option('hm_dbversion', $currentversion);
         }
     }
 
     protected function regenerate_visits() {
-        $db = new HMDatabase();
-        $views = $db->load_all(HM_LOGTABLENAME . ' l', 'l.visit IS NULL ORDER BY l.time');
+        $db = new Database();
+        $views = $db->load_all(self::LOGTABLENAME . ' l', 'l.visit IS NULL ORDER BY l.time');
         foreach ($views as $view) {
             $result = $db->query('SELECT COALESCE(' .
-                                    '(SELECT MAX(l.visit) FROM ' . HM_LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
-                                    '(SELECT MAX(ll.visit)+1 FROM ' . HM_LOGTABLENAME . ' ll),
+                                    '(SELECT MAX(l.visit) FROM ' . self::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
+                                    '(SELECT MAX(ll.visit)+1 FROM ' . self::LOGTABLENAME . ' ll),
                                     1) visit',
-                                array($view->fingerprint, $view->time, MAXVISITLENGTH));
+                                array($view->fingerprint, $view->time, self::MAXVISITLENGTH));
             $visit = $result[0]->visit;
-            $db->query('UPDATE ' . HM_LOGTABLENAME . ' l SET l.visit=%d WHERE l.id=%d', array($visit, $view->id));
+            $db->query('UPDATE ' . self::LOGTABLENAME . ' l SET l.visit=%d WHERE l.id=%d', array($visit, $view->id));
         }
     }
 }

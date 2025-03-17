@@ -7,7 +7,7 @@ import app from 'app';
 
 
 $(function() {
-    $('#howmany').each(function() {
+    $('#howmany .root').each(function() {
         app.init(this);
     });
 });

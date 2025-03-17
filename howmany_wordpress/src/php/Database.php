@@ -1,7 +1,9 @@
 <?php
 
+namespace OleTrenner\HowMany;
 
-class HMDatabase {
+
+class Database {
     protected $db;
 
     public function __construct() {
