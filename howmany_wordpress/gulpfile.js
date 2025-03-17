@@ -14,24 +14,24 @@ var webserver = require('gulp-webserver');
 var develop = process.env.prod != 'true';
 
 gulp.task('scss', function() {
-    return gulp.src('howmany_wordpress/src/scss/**/*.scss')
+    return gulp.src('src/scss/**/*.scss')
     .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
-    .pipe(gulp.dest('howmany_wordpress/css'));
+    .pipe(gulp.dest('css'));
 });
 
 gulp.task('pug', function() {
-    return gulp.src(['howmany_wordpress/src/pug/**/*.pug', '!howmany_wordpress/src/pug/**/_*.pug'])
+    return gulp.src(['src/pug/**/*.pug', '!src/pug/**/_*.pug'])
     .pipe(pug({pretty: true}))
     .pipe(gulp.dest('howmany_wordpress'));
 });
 
 gulp.task('js', function() {
-    return gulp.src('howmany_wordpress/src/js/' + NAME + '.js')
+    return gulp.src('src/js/' + NAME + '.js')
     .pipe(webpack({
         resolve: {
             modules: [
-                path.resolve('howmany_wordpress/src/js'),
-                path.resolve('howmany_wordpress/src/pug'),
+                path.resolve('src/js'),
+                path.resolve('src/pug'),
                 path.resolve('node_modules'),
             ],
             alias: {
@@ -56,7 +56,7 @@ gulp.task('js', function() {
         mode: !develop ? 'production' : 'development',
         output: {filename: NAME + '.all.js'}
     }, webpackcompiler))
-    .pipe(gulp.dest('howmany_wordpress/js'));
+    .pipe(gulp.dest('js'));
 });
 
 gulp.task('compile', gulp.parallel('pug', 'scss', 'js'));
@@ -66,9 +66,9 @@ gulp.task('compile_prod', gulp.series(async function() {
 }, 'compile'));
 
 gulp.task('watch', gulp.series('compile', async function() {
-    gulp.watch(['howmany_wordpress/src/scss/**/*.scss'], gulp.parallel('scss'));
-    gulp.watch(['howmany_wordpress/src/pug/**/*.pug'], gulp.parallel('pug'));
-    gulp.watch(['howmany_wordpress/src/js/**/*.js'], gulp.parallel('js'));
+    gulp.watch(['src/scss/**/*.scss'], gulp.parallel('scss'));
+    gulp.watch(['src/pug/**/*.pug'], gulp.parallel('pug'));
+    gulp.watch(['src/js/**/*.js'], gulp.parallel('js'));
 
     gulp.src(['.'])
     .pipe(webserver({

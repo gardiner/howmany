@@ -6,19 +6,13 @@ task :default => [:watch]
 
 desc 'Compiles HAML and SCSS resources'
 task :compile_prod do
-    sh "npx gulp compile_prod"
+    sh "cd howmany_wordpress && npx gulp compile_prod"
 end
 
 
 desc 'Watches the site directory and regenerates when files change'
 task :watch do
-    sh "npx gulp watch"
-end
-
-
-desc 'Starts wordpress dev server'
-task :wordpress do
-    sh "cd ./-wp && wp server"
+    sh "cd howmany_wordpress && npx gulp watch"
 end
 
 
@@ -28,20 +22,4 @@ task :package => [:compile_prod] do
     sh "rm -rf #{target}" if File.exist? target
     sh "mkdir -p #{target}" if not File.exist? target
     sh "rsync -vr --copy-links howmany_wordpress/ #{target}"
-end
-
-
-desc 'Bump version. Use with caution, might change unrelated code areas'
-task :version do
-    new_version = ENV['version']
-    ['package.json', 'howmany_wordpress/howmany.php'].each { |f|
-        updated = File.open(f).read.gsub(current_version, new_version)
-        File.open(f, 'w').write(updated)
-    }
-    File.open('VERSION', 'w').write(new_version)
-end
-
-
-def current_version
-    (File.exist? 'VERSION') ? File.open('VERSION').read.strip : "0.0.1"
 end

@@ -1,5 +1,12 @@
 {
-    "require": {
-        "donatj/phpuseragentparser": "*"
+  "name": "oletrenner/howmany_wordpress",
+  "require": {
+    "donatj/phpuseragentparser": "*"
+  },
+  "extra": {
+    "version": "0.1.0",
+    "assets": {
+      "path": "."
     }
+  }
 }
