@@ -6,10 +6,9 @@ var gulp = require('gulp');
 var path = require('path');
 var pug = require('gulp-pug');
 var pug_compiler = require('pug');
-var sass = require('gulp-sass')(require('node-sass'));
+var sass = require('gulp-sass')(require('sass'));
 var webpackcompiler = require('webpack');
 var webpack = require('webpack-stream');
-var webserver = require('gulp-webserver');
 
 var develop = process.env.prod != 'true';
 
@@ -22,7 +21,7 @@ gulp.task('scss', function() {
 gulp.task('pug', function() {
     return gulp.src(['src/pug/**/*.pug', '!src/pug/**/_*.pug'])
     .pipe(pug({pretty: true}))
-    .pipe(gulp.dest('howmany_wordpress'));
+    .pipe(gulp.dest('.'));
 });
 
 gulp.task('js', function() {
@@ -69,13 +68,6 @@ gulp.task('watch', gulp.series('compile', async function() {
     gulp.watch(['src/scss/**/*.scss'], gulp.parallel('scss'));
     gulp.watch(['src/pug/**/*.pug'], gulp.parallel('pug'));
     gulp.watch(['src/js/**/*.js'], gulp.parallel('js'));
-
-    gulp.src(['.'])
-    .pipe(webserver({
-        livereload: true,
-        open: true,
-        port: 8081,
-    }));
 }));
 
 gulp.task('default', gulp.parallel('watch'));
