@@ -37,7 +37,7 @@ function linechart(canvasElement, data) {
         datasets: [
             {
                 label: data.label || '',
-                strokeColor: data.color || '#274060',
+                strokeColor: data.color || '#274060',
                 data: data.y || []
             }
         ]
@@ -112,8 +112,8 @@ export default {
         };
     },
     render: {
-        linechart: linechart,
-        piechart: piechart,
-        barchart: barchart
+        linechart,
+        piechart,
+        barchart
     }
 };

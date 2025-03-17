@@ -9,16 +9,27 @@ import charts from 'model/charts';
 export default {
     template: require('components/_chart.pug').default,
     props: ['label', 'values', 'type'],
-    mounted: function() {
-        var chart;
+    data: function() {
+        return {
+            chart: null,
+        };
+    },
+    watch: {
+        values: 'init_chart',
+    },
+    methods: {
+        init_chart: function() {
+            var canvas = $(this.$el).find('canvas')[0];
 
-        this.$watch('values', function() {
-            if (chart) {
-                chart.destroy();
+            if (this.chart) {
+                this.chart.destroy();
             }
             if (charts.render.hasOwnProperty(this.type)) {
-                chart = charts.render[this.type]($(this.$el).find('canvas')[0], this.values);
+                this.chart = charts.render[this.type](canvas, this.values);
             }
-        }, { immediate: true });
+        }
+    },
+    mounted: function() {
+        this.init_chart();
     }
 };
