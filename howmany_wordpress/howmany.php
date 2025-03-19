@@ -16,14 +16,13 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 
 class HowMany {
-    const DBVERSION = 2;
-    const LOGTABLENAME = 'howmany_log';
     const MAXVISITLENGTH = 60 * 60; //1 hour
 
     protected $BASE;
     protected $ROOT;
     protected $db;
     protected $api;
+    protected $store;
 
     public function __construct() {
         $this->ROOT = dirname(__FILE__) . '/';
@@ -31,6 +30,7 @@ class HowMany {
 
         $this->db = new Database();
         $this->api = new Api($this->db);
+        $this->store = new Store($this->db);
 
         if (function_exists('add_action')) {
             //backend functionality
@@ -61,7 +61,7 @@ class HowMany {
         $info = get_plugin_data(__FILE__);
         $version = $info['Version'];
 
-        $this->check_schema();
+        $this->store->check_schema();
         $options = json_encode(array(
             "servername" => $_SERVER['SERVER_NAME'],    //will be used to determine external and internal referers
             "api" => array(
@@ -109,13 +109,13 @@ class HowMany {
         }
 
         $db = new Database();
-        $db->query('INSERT INTO ' . self::LOGTABLENAME . ' ' .
+        $db->query('INSERT INTO ' . Store::LOGTABLENAME . ' ' .
                     '(time, fingerprint, url, referer, useragent, visit) ' .
                     'VALUES (' .
                         '%d, %s, %s, %s, %s,' .
                         '(SELECT COALESCE(' .
-                            '(SELECT MAX(l.visit) FROM ' . self::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
-                            '(SELECT MAX(ll.visit)+1 FROM ' . self::LOGTABLENAME . ' ll),
+                            '(SELECT MAX(l.visit) FROM ' . Store::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
+                            '(SELECT MAX(ll.visit)+1 FROM ' . Store::LOGTABLENAME . ' ll),
                             1)' .
                         ')' .
                     ')',
@@ -141,45 +141,6 @@ class HowMany {
             $data['HTTP_USER_AGENT'],
         );
         return hash('crc32', implode("", $parts), false);
-    }
-
-    protected function check_schema() {
-        $db = new Database();
-        $dbversion = get_option('hm_dbversion', 0);
-        $currentversion = self::DBVERSION;
-
-        if ($dbversion != $currentversion) {
-            if ($dbversion == 1) {
-                //add missing visit column and populate it with values
-                $db->query('ALTER TABLE ' . self::LOGTABLENAME . ' ADD visit int');
-                $this->regenerate_visits();
-            } else if ($dbversion != $currentversion) {
-                $db->query('CREATE TABLE ' . self::LOGTABLENAME . ' (' .
-                                'id bigint(20) PRIMARY KEY AUTO_INCREMENT,' .
-                                'time int,' .
-                                'fingerprint varchar(10),' .
-                                'url varchar(4096),' .
-                                'referer varchar(4096),' .
-                                'useragent varchar(4096),' .
-                                'visit int' .
-                           ')');
-            }
-            update_option('hm_dbversion', $currentversion);
-        }
-    }
-
-    protected function regenerate_visits() {
-        $db = new Database();
-        $views = $db->load_all(self::LOGTABLENAME . ' l', 'l.visit IS NULL ORDER BY l.time');
-        foreach ($views as $view) {
-            $result = $db->query('SELECT COALESCE(' .
-                                    '(SELECT MAX(l.visit) FROM ' . self::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
-                                    '(SELECT MAX(ll.visit)+1 FROM ' . self::LOGTABLENAME . ' ll),
-                                    1) visit',
-                                array($view->fingerprint, $view->time, self::MAXVISITLENGTH));
-            $visit = $result[0]->visit;
-            $db->query('UPDATE ' . self::LOGTABLENAME . ' l SET l.visit=%d WHERE l.id=%d', array($visit, $view->id));
-        }
     }
 }
 
