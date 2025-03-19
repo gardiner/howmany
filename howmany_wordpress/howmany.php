@@ -20,13 +20,17 @@ class HowMany {
     const LOGTABLENAME = 'howmany_log';
     const MAXVISITLENGTH = 60 * 60; //1 hour
 
-    protected $days_limit = 14;
     protected $BASE;
     protected $ROOT;
+    protected $db;
+    protected $api;
 
     public function __construct() {
         $this->ROOT = dirname(__FILE__) . '/';
         $this->BASE = get_bloginfo('url') . '/wp-content/plugins/howmany_wordpress/';
+
+        $this->db = new Database();
+        $this->api = new Api($this->db);
 
         if (function_exists('add_action')) {
             //backend functionality
@@ -66,59 +70,13 @@ class HowMany {
                     "action" => "hm_api",
                 ),
             ),
-            "days_limit" => $this->days_limit,
+            "days_limit" => $this->api->days_limit,
         ));
         include('views/adminpage.html');
     }
 
     public function api() {
-        $db = new Database();
-
-        $endpoint = isset($_REQUEST['endpoint']) ? $_REQUEST['endpoint'] : false;
-        $view = isset($_REQUEST['view']) ? $_REQUEST['view'] : '%';
-        $referer = isset($_REQUEST['referer']) ? $_REQUEST['referer'] : '%';
-        $limit = time() - ($this->days_limit * 24 * 60 * 60); //backlog
-        switch ($endpoint) {
-            case 'views':
-                $result = array(
-                    "stats" => $db->load_all_extended('count(*) total', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s', array($limit, $view, $referer))[0],
-                    "views" => $db->load_all_extended('l.url, count(l.id) count', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.url ORDER BY count DESC', array($limit, $view, $referer)),
-                    "timeline" => $db->load_all_extended('min(l.time) starttime, floor(l.time / (60*60*24)) * (60*60*24) day, count(*) views', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY day', array($limit, $view, $referer)),
-                );
-                break;
-            case 'visits':
-                $result = array(
-                    /*
-                    "visits" => $db->load_all_extended('visit, count(id) views, min(time) starttime, max(time) endtime, max(time)-min(time) duration, floor(time/(60*60*24))*(60*60*24) day', self::LOGTABLENAME, 'TRUE GROUP BY visit'),
-                    */
-                    "stats" => $db->load_all_extended('count(distinct visit) total', self::LOGTABLENAME . ' l', 'l.time > %d', array($limit))[0],
-                    "timeline" => $db->load_all_extended('count(v.visit) count, v.day' ,'(SELECT l.visit, floor(l.time / (60*60*24)) * (60*60*24) day FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) v', 'TRUE GROUP BY v.day', array($limit)),
-                    "entryurls" => $db->load_all_extended('count(visit) count, entryurl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time ASC SEPARATOR \'\n\'), \'\n\', 1) entryurl FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) entryurls', 'TRUE GROUP BY entryurl ORDER BY count DESC', array($limit)),
-                    "exiturls" => $db->load_all_extended('count(visit) count, exiturl', '(SELECT l.visit, substring_index(group_concat(l.url ORDER BY l.time DESC SEPARATOR \'\n\'), \'\n\', 1) exiturl FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) exiturls', 'TRUE GROUP BY exiturl ORDER BY count DESC', array($limit)),
-                    "views" => $db->load_all_extended('viewcount, count(viewcount) count', '(SELECT l.visit, count(l.url) viewcount FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY l.visit) viewcounts', 'TRUE GROUP BY viewcount LIMIT 15', array($limit)),
-                    "durations" => $db->load_all_extended('duration, count(duration) count', '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . self::LOGTABLENAME . ' l WHERE l.time > %d GROUP BY visit) durations', 'TRUE GROUP BY duration LIMIT 15', array($limit)),
-                );
-                break;
-            case 'useragents':
-                $result = array(
-                    "stats" => $db->load_all_extended('count(*) total', self::LOGTABLENAME . ' l', 'l.time > %d AND url LIKE %s AND referer LIKE %s', array($limit, $view, $referer))[0],
-                    "useragents" => $db->load_all_extended('l.useragent, count(l.id) count', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.useragent ORDER BY count DESC', array($limit, $view, $referer)),
-                );
-                break;
-            case 'referers':
-                $result = array(
-                    "referers" => $db->load_all_extended('l.referer, count(l.id) count', self::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.referer ORDER BY count DESC', array($limit, $view, $referer)),
-                );
-                break;
-
-            default:
-                $result = array();
-                break;
-        }
-
-        header('Content-Type: application/json');
-        echo json_encode($result);
-        exit;
+        return $this->api->handle_request();
     }
 
     /**
