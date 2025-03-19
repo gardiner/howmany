@@ -66,7 +66,7 @@ gulp.task('compile_prod', gulp.series(async function() {
 
 gulp.task('watch', gulp.series('compile', async function() {
     gulp.watch(['src/scss/**/*.scss'], gulp.parallel('scss'));
-    gulp.watch(['src/pug/**/*.pug'], gulp.parallel('pug'));
+    gulp.watch(['src/pug/**/*.pug'], gulp.parallel('pug', 'js'));
     gulp.watch(['src/js/**/*.js'], gulp.parallel('js'));
 }));
 

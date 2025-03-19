@@ -2,7 +2,7 @@
 
 import $ from 'jquery';
 import _ from 'lodash';
-import Chart from 'chart.js';
+import Chart from 'chart.js/auto';
 
 import config from 'config';
 
@@ -32,31 +32,19 @@ function color(index, total) {
 
 
 function linechart(canvasElement, data) {
-    return new Chart(canvasElement.getContext("2d")).Line({
-        labels: data.x || [],
-        datasets: [
-            {
-                label: data.label || '',
-                strokeColor: data.color || '#274060',
-                data: data.y || []
-            }
-        ]
-    }, {
-        pointDot: true,
-        pointDotRadius: 1.6,
+    return new Chart(canvasElement.getContext("2d"), {
+        type: 'line',
 
-        bezierCurve : false,
-        datasetFill: false,
-
-        scaleFontSize: 10,
-        scaleShowGridLines: true,
-        scaleBeginAtZero: true,
-
-        //this requires some calculating
-        scaleOverride: false,
-        scaleSteps: 7,
-        scaleStepWidth: 50,
-        scaleStartValue: 0
+        data: {
+            labels: data.x || [],
+            datasets: [
+                {
+                    label: data.label || '',
+                    strokeColor: data.color || '#274060',
+                    data: data.y || [],
+                }
+            ]
+        },
     });
 }
 
@@ -81,23 +69,31 @@ function piechart(canvasElement, data) {
         i.color = color(n, reduced.length);
     });
 
-    return new Chart(canvasElement.getContext("2d")).Pie(reduced, {
-        segmentStrokeWidth: 1,
-        percentageInnerCutout: 50
+    return new Chart(canvasElement.getContext("2d"), {
+        type: 'doughnut',
+        data: {
+            datasets: [
+                {
+                    data: reduced,
+                },
+            ],
+        },
     });
 }
 
 function barchart(canvasElement, data) {
-    return new Chart(canvasElement.getContext("2d")).Bar({
-        labels: data.x || [],
-        datasets: [
-            {
-                label: data.label || '',
-                fillColor: data.color || '#274060',
-                data: data.y || []
-            }
-        ]
-    }, {
+    return new Chart(canvasElement.getContext("2d"), {
+        type: 'bar',
+        data: {
+            labels: data.x || [],
+            datasets: [
+                {
+                    label: data.label || '',
+                    fillColor: data.color || '#274060',
+                    data: data.y || []
+                }
+            ]
+        },
     });
 }
 

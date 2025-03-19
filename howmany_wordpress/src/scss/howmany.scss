@@ -2,6 +2,11 @@ $blue: #0073aa;
 
 .howmany {
     max-width: 1000px;
+    box-sizing: border-box;
+
+    * {
+        box-sizing: inherit;
+    }
 
     .small {
         font-size: 80%;
@@ -56,9 +61,12 @@ $blue: #0073aa;
     }
 
     .chart {
-        canvas {
-            width: 100%;
-            height:150px;
+        .chartcontainer {
+            height:220px;
+
+            canvas {
+                width: 100%;
+            }
         }
     }
 
