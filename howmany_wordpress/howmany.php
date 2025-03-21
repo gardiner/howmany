@@ -36,7 +36,7 @@ class HowMany {
             //backend functionality
             add_action('admin_enqueue_scripts', array($this, 'init_admin_resources'));
             add_action('admin_menu', array($this, 'init_menus'));
-            add_action('wp_ajax_hm_api', array($this, 'api'));
+            add_action('wp_ajax_hm_api', array($this->api, 'handle_request'));
 
             //hooking into wordpress to track requests
             add_action('init', array($this, 'track_request'));
@@ -75,10 +75,6 @@ class HowMany {
         include('views/adminpage.html');
     }
 
-    public function api() {
-        return $this->api->handle_request();
-    }
-
     /**
      * Track request.
      */
@@ -95,7 +91,8 @@ class HowMany {
             preg_match("/^\/wp-cron/i", $url) ||
             preg_match("/^\/wp-admin/i", $url) ||
             preg_match("/^\/wp-login/i", $url) ||
-            preg_match("/^\/wp-json/i", $url)) {
+            preg_match("/^\/wp-json/i", $url) ||
+            preg_match("/^\/howmany_wordpress/i", $url)) {
             return;
         }
 
