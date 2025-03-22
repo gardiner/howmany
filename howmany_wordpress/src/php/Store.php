@@ -1,6 +1,6 @@
 <?php
 
-namespace OleTrenner\Howmany;
+namespace OleTrenner\HowMany;
 
 
 class Store {

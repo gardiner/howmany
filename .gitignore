@@ -7,3 +7,4 @@ howmany_wordpress/partials/*.html
 howmany_wordpress/views/*.html
 howmany_wordpress/vendor
 node_modules
+.idea

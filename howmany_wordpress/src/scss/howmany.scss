@@ -1,6 +1,8 @@
 $blue: #0073aa;
 
 .howmany {
+    @import "elements";
+
     max-width: 1000px;
     box-sizing: border-box;
 

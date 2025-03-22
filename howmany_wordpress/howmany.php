@@ -12,6 +12,8 @@ License: custom
 
 namespace OleTrenner\HowMany;
 
+use OleTrenner\HowMany\Measurements\Views;
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 
@@ -28,15 +30,19 @@ class HowMany {
         $this->ROOT = dirname(__FILE__) . '/';
         $this->BASE = get_bloginfo('url') . '/wp-content/plugins/howmany_wordpress/';
 
+        $measurements = [
+            'views' => new Views('Views'),
+        ];
+
         $this->db = new Database();
-        $this->api = new Api($this->db);
+        $this->api = new Api($measurements, $this->db);
         $this->store = new Store($this->db);
 
         if (function_exists('add_action')) {
             //backend functionality
             add_action('admin_enqueue_scripts', array($this, 'init_admin_resources'));
             add_action('admin_menu', array($this, 'init_menus'));
-            add_action('wp_ajax_hm_api', array($this->api, 'handle_request'));
+            add_action('wp_ajax_hm_api', array($this->api, 'handle'));
 
             //hooking into wordpress to track requests
             add_action('init', array($this, 'track_request'));
@@ -65,10 +71,7 @@ class HowMany {
         $options = json_encode(array(
             "servername" => $_SERVER['SERVER_NAME'],    //will be used to determine external and internal referers
             "api" => array(
-                "base" => admin_url("admin-ajax.php"),  //api request base url
-                "default_data" => array(                //will be send with each api request
-                    "action" => "hm_api",
-                ),
+                "base" => add_query_arg(["action" => "hm_api"], admin_url("admin-ajax.php")),  //api request base url
             ),
             "days_limit" => $this->api->days_limit,
         ));

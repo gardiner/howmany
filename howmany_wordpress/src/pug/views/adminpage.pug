@@ -1,5 +1,5 @@
-#howmany.wrap(options!="<?= htmlspecialchars($options) ?>")
+#howmany.wrap
     #icon-tools.icon32
     h2
         | HowMany #[span.small v<?= $version ?>]
-    .root.howmany
+    .root.howmany(options!="<?= htmlspecialchars($options) ?>")

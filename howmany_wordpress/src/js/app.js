@@ -4,6 +4,7 @@ import $ from 'jquery';
 import _ from 'lodash';
 import Vue from 'vue';
 
+import api from 'api';
 import autoloader from 'components/autoloader';
 import charts from 'model/charts';
 import components from 'components';
@@ -20,8 +21,10 @@ const app = {
         var self = this;
 
         return {
-            route: null,
             config: config,
+            measurements: null,
+
+            route: null,
             views: {
                 stats: {},
                 definition: [
@@ -172,6 +175,11 @@ const app = {
     components: components,
     created: function() {
         var self = this;
+
+        api.measurements.list()
+        .then(function(measurements) {
+            self.measurements = measurements;
+        });
 
         //visits are currently not adjusted by view/referer
         utils.api($.extend({endpoint: 'visits'}, self.route))

@@ -1,21 +1,74 @@
 <?php
 
-namespace OleTrenner\Howmany;
+namespace OleTrenner\HowMany;
 
 
 class Api {
     public $days_limit = 14;
 
+    /**
+     * @param array<Measurement> $measurements
+     * @param Database $db
+     */
     public function __construct(
+        protected array $measurements,
         protected Database $db,
     )
     {
     }
 
-    public function handle_request()
+    public function handle()
     {
         $endpoint = $_REQUEST['endpoint'] ?? false;
+        $params = json_decode(wp_unslash($_REQUEST['params'] ?? 'false'), true);
         $method = 'handle_' . $endpoint;
+
+        //new handling
+        if (method_exists($this, $method)) {
+            try {
+                $result = [
+                    'status' => 'ok',
+                    'result' => $this->$method($params),
+                ];
+            } catch (\Exception $e) {
+                http_response_code(500);
+                $result = [
+                    'status' => 'error',
+                    'error' => $e->getMessage(),
+                ];
+            }
+            header('Content-Type: application/json');
+            echo json_encode($result);
+            exit;
+        }
+
+        $this->handle_legacy();
+    }
+
+    protected function handle_measurements(mixed $params): mixed
+    {
+        $result = [];
+        foreach ($this->measurements as $key => $measurement) {
+            $result[] = [
+                'key' => $key,
+                'title' => $measurement->getTitle(),
+                'type' => $measurement->getType(),
+            ];
+        }
+        return $result;
+    }
+
+    protected function handle_measurement(mixed $params): mixed
+    {
+        return $params;
+    }
+
+    protected function handle_legacy()
+    {
+
+        //legacy handling
+        $endpoint = $_REQUEST['endpoint'] ?? false;
+        $method = 'handle_legacy_' . $endpoint;
 
         $view = $_REQUEST['view'] ?? '%';
         $referer = $_REQUEST['referer'] ?? '%';
@@ -37,7 +90,12 @@ class Api {
         exit;
     }
 
-    protected function handle_views($view, $referer, $limit)
+    protected function handle_legacy_measurements($view, $referer, $limit)
+    {
+        return $this->measurements;
+    }
+
+    protected function handle_legacy_views($view, $referer, $limit)
     {
         return [
             "stats" => $this->db->load_all_extended('count(*) total', Store::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s', array($limit, $view, $referer))[0],
@@ -46,7 +104,7 @@ class Api {
         ];
     }
 
-    protected function handle_visits($view, $referer, $limit)
+    protected function handle_legacy_visits($view, $referer, $limit)
     {
         return [
             /*
@@ -61,7 +119,7 @@ class Api {
         ];
     }
 
-    protected function handle_useragents($view, $referer, $limit)
+    protected function handle_legacy_useragents($view, $referer, $limit)
     {
         return [
             "stats" => $this->db->load_all_extended('count(*) total', Store::LOGTABLENAME . ' l', 'l.time > %d AND url LIKE %s AND referer LIKE %s', array($limit, $view, $referer))[0],
@@ -69,7 +127,7 @@ class Api {
         ];
     }
 
-    protected function handle_referers($view, $referer, $limit)
+    protected function handle_legacy_referers($view, $referer, $limit)
     {
         return [
             "referers" => $this->db->load_all_extended('l.referer, count(l.id) count', Store::LOGTABLENAME . ' l', 'l.time > %d AND l.url LIKE %s AND l.referer LIKE %s GROUP BY l.referer ORDER BY count DESC', array($limit, $view, $referer)),
