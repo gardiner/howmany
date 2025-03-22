@@ -34,7 +34,10 @@ function color(index, total) {
 function linechart(canvasElement, data) {
     return new Chart(canvasElement.getContext("2d"), {
         type: 'line',
-
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        },
         data: {
             labels: data.x || [],
             datasets: [

@@ -4,5 +4,7 @@
                   type="button"
                   :class="{active: resolution == r.key}"
                   @click="resolution = r.key") {{r.title}}
-    pre {{data}}
-    chart
+    chart(v-if="data"
+          type="linechart"
+          :label="measurement.title"
+          :values="data")

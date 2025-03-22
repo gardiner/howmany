@@ -14,6 +14,24 @@ class Store {
     {
     }
 
+    public function getValue(string $key, string $slot): mixed
+    {
+        $result = $this->db->load(static::CACHETABLENAME, 'measurement=%s AND slot=%s', [$key, $slot]);
+        $value = $result->value;
+        return $value ? json_decode($value, true) : $value;
+    }
+
+    public function storeValue(string $key, string $slot, mixed $value)
+    {
+        $this->db->query('DELETE FROM ' . static::CACHETABLENAME .
+            ' WHERE measurement=%s AND slot=%s', [$key, $slot]);
+        $this->db->insert(static::CACHETABLENAME, [
+            'measurement' => $key,
+            'slot' => $slot,
+            'value' => json_encode($value),
+        ]);
+    }
+
     public function check_schema() {
         $dbversion = get_option('hm_dbversion', 0);
         $currentversion = self::DBVERSION;

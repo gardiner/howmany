@@ -5,6 +5,7 @@ import _ from 'lodash';
 
 import api from 'api';
 import charts from 'model/charts';
+import timeseriesmodel from 'model/timeseries';
 
 
 const RESOLUTIONS = [
@@ -43,7 +44,10 @@ export default {
             var self = this;
             api.measurements.get(_.get(self.measurement, 'key'), self.resolution, self.interval)
             .then(function(result) {
-                self.data = result;
+                self.data = timeseriesmodel.chart_model(result, {
+                    title: self.measurement.title,
+                    value_prop: 'value.views',
+                });
             });
         }
     },

@@ -9,7 +9,6 @@ Author URI: http://www.3dbits.de
 License: custom
 */
 
-
 namespace OleTrenner\HowMany;
 
 use OleTrenner\HowMany\Measurements\Views;
@@ -22,21 +21,25 @@ class HowMany {
 
     protected $BASE;
     protected $ROOT;
+
     protected $db;
-    protected $api;
     protected $store;
+    protected $measurementService;
+    protected $api;
 
     public function __construct() {
         $this->ROOT = dirname(__FILE__) . '/';
         $this->BASE = get_bloginfo('url') . '/wp-content/plugins/howmany_wordpress/';
 
+        $this->db = new Database();
+        $this->store = new Store($this->db);
+
         $measurements = [
-            'views' => new Views('Views'),
+            'views' => new Views('Views', $this->db),
         ];
 
-        $this->db = new Database();
-        $this->api = new Api($measurements, $this->db);
-        $this->store = new Store($this->db);
+        $this->measurementService = new MeasurementService($measurements, $this->store);
+        $this->api = new Api($this->measurementService, $this->db);
 
         if (function_exists('add_action')) {
             //backend functionality

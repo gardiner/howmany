@@ -6,12 +6,8 @@ namespace OleTrenner\HowMany;
 class Api {
     public $days_limit = 14;
 
-    /**
-     * @param array<Measurement> $measurements
-     * @param Database $db
-     */
     public function __construct(
-        protected array $measurements,
+        protected MeasurementService $measurementService,
         protected Database $db,
     )
     {
@@ -47,25 +43,20 @@ class Api {
 
     protected function handle_measurements(mixed $params): mixed
     {
-        $result = [];
-        foreach ($this->measurements as $key => $measurement) {
-            $result[] = [
-                'key' => $key,
-                'title' => $measurement->getTitle(),
-                'type' => $measurement->getType(),
-            ];
-        }
-        return $result;
+        return $this->measurementService->getMeasurementDefinitions();
     }
 
     protected function handle_measurement(mixed $params): mixed
     {
-        return $params;
+        $key = $params['key'] ?? null;
+        $resolution = Resolution::tryFrom($params['resolution'] ?? null);
+        $interval = $params['interval'] ?? null;
+        $refresh = $params['refresh'] ?? false;
+        return $this->measurementService->applyMeasurement($key, $resolution, $interval, $refresh);
     }
 
     protected function handle_legacy()
     {
-
         //legacy handling
         $endpoint = $_REQUEST['endpoint'] ?? false;
         $method = 'handle_legacy_' . $endpoint;
