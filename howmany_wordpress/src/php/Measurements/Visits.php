@@ -7,7 +7,7 @@ use OleTrenner\HowMany\Measurement;
 use OleTrenner\HowMany\MeasurementType;
 use OleTrenner\HowMany\Store;
 
-class Views implements Measurement
+class Visits implements Measurement
 {
     public function __construct(
         protected string $title,
@@ -27,7 +27,7 @@ class Views implements Measurement
 
     public function getValue(int $start, int $end): mixed
     {
-        $result = $this->db->load_all_extended('count(*) total', Store::LOGTABLENAME, 'time >= %d AND time <= %d', [
+        $result = $this->db->load_all_extended('count(distinct visit) total', Store::LOGTABLENAME, 'time >= %d AND time <= %d', [
             $start,
             $end,
         ]);

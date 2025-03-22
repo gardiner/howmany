@@ -46,7 +46,7 @@ export default {
             .then(function(result) {
                 self.data = timeseriesmodel.chart_model(result, {
                     title: self.measurement.title,
-                    value_prop: 'value.views',
+                    value_prop: 'value.num',
                 });
             });
         }

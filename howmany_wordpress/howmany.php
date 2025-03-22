@@ -12,6 +12,7 @@ License: custom
 namespace OleTrenner\HowMany;
 
 use OleTrenner\HowMany\Measurements\Views;
+use OleTrenner\HowMany\Measurements\Visits;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -36,6 +37,7 @@ class HowMany {
 
         $measurements = [
             'views' => new Views('Views', $this->db),
+            'visits' => new Visits('Visits', $this->db),
         ];
 
         $this->measurementService = new MeasurementService($measurements, $this->store);
