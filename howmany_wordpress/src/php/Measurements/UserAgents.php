@@ -64,6 +64,11 @@ class UserAgents implements Measurement
     protected function formatUseragent(string $useragent): string
     {
         $useragent = json_decode($useragent, true);
-        return $useragent['browser'] . ' ' . $useragent['version'] . ' (' . $useragent['platform'] . ')';
+        if (!$useragent) {
+            return 'Unbekannt';
+        }
+        $platform = !empty($useragent['platform']) ? ' (' . $useragent['platform'] . ')' : '';
+        $useragent = trim($useragent['browser'] . ' ' . $useragent['version'] . $platform);
+        return $useragent ?: 'Unbekannt';
     }
 }

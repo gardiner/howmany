@@ -35,7 +35,7 @@ class Api {
                 'error' => $e->getMessage(),
             ];
         }
-        
+
         header('Content-Type: application/json');
         echo json_encode($result);
         exit;

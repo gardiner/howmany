@@ -12,6 +12,9 @@ export default {
         }
     },
     computed: {
+        limited: function() {
+            return _.slice(this.values, 0, 25);
+        },
     },
     methods: {
         round: function(value) {

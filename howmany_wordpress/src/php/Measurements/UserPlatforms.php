@@ -18,6 +18,6 @@ class UserPlatforms extends UserAgents implements Measurement
     protected function formatUseragent(string $useragent): string
     {
         $useragent = json_decode($useragent, true);
-        return $useragent['platform'];
+        return !empty($useragent['platform']) ? $useragent['platform'] : 'Unbekannt';
     }
 }
