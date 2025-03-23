@@ -113,18 +113,7 @@ function barchart(canvasElement, data) {
 }
 
 export default {
-    /**
-     * Converts a list of objects into an {x: ..., y: ...} object as required for linecharts and histograms.
-     */
-    values2xy: function(values, x_field, y_field) {
-        return {
-            x: _.map(values, x_field),
-            y: _.map(values, y_field)
-        };
-    },
-    render: {
-        linechart,
-        piechart,
-        barchart
-    }
+    linechart,
+    piechart,
+    barchart
 };

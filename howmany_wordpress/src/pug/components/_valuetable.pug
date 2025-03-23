@@ -1,14 +1,14 @@
-.valuetable
+.listtable
     table
         thead
             tr
-                th(v-for="column in definition") {{ column.label }}
+                th #
+                th %
+                th Anzahl
+                th Bezeichnung
         tbody
-            tr(v-for="row in visible_values")
-                td(v-for="column in definition" :class="column.class_" v-on:click="click(column.click, row)") {{ render(column.value, row) }}
-        tbody(v-show="show_hidden")
-            tr(v-for="row in hidden_values")
-                td(v-for="column in definition" :class="column.class_" v-on:click="click(column.click, row)") {{ render(column.value, row) }}
-    a.clickable(v-if="hidden_values.length" @click="show_hidden = !show_hidden")
-        span(v-if="!show_hidden") Show all
-        span(v-if="show_hidden") Show less
+            tr(v-for="row, index in values")
+                td {{index+1}}
+                td {{round(row.rel*100)}}%
+                td {{row.value}}
+                td {{row.label}}

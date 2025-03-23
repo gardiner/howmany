@@ -3,7 +3,7 @@
 import $ from 'jquery';
 import _ from 'lodash';
 
-import charts from 'model/charts';
+import chartmodel from 'model/charts';
 
 
 export default {
@@ -24,8 +24,8 @@ export default {
             if (this.chart) {
                 this.chart.destroy();
             }
-            if (charts.render.hasOwnProperty(this.type)) {
-                this.chart = charts.render[this.type](canvas, this.values);
+            if (chartmodel.hasOwnProperty(this.type)) {
+                this.chart = chartmodel[this.type](canvas, this.values);
             }
         }
     },
