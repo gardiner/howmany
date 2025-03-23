@@ -92,7 +92,7 @@ function barchart(canvasElement, data) {
             datasets: [
                 {
                     label: data.label || '',
-                    fillColor: data.color || '#274060',
+                    fillColor: data.color || '#274060',
                     data: data.y || []
                 }
             ]

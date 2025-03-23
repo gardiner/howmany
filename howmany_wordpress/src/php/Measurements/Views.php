@@ -10,14 +10,14 @@ use OleTrenner\HowMany\Store;
 class Views implements Measurement
 {
     public function __construct(
-        protected string $title,
-        protected Database $db,)
+        protected Database $db,
+    )
     {
     }
 
     public function getTitle(): string
     {
-        return $this->title;
+        return 'Aufrufe';
     }
 
     public function getType(): MeasurementType
@@ -31,10 +31,6 @@ class Views implements Measurement
             $start,
             $end,
         ]);
-        return [
-            'start' => $start,
-            'end' => $end,
-            'num' => (int)$result[0]->total,
-        ];
+        return (int)$result[0]->total;
     }
 }

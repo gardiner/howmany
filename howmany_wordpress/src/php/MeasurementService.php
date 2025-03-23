@@ -10,6 +10,7 @@ class MeasurementService
     public function __construct(
         protected array $measurements,
         protected Store $store,
+        protected Database $db,
     )
     {
     }
@@ -17,7 +18,8 @@ class MeasurementService
     public function getMeasurementDefinitions()
     {
         $result = [];
-        foreach ($this->measurements as $key => $measurement) {
+        foreach ($this->measurements as $key => $classname) {
+            $measurement = new $classname($this->db);
             $result[] = [
                 'key' => $key,
                 'title' => $measurement->getTitle(),
@@ -29,10 +31,11 @@ class MeasurementService
 
     public function applyMeasurement(?string $key, ?Resolution $resolution, ?array $interval, bool $refresh): array
     {
-        $measurement = $this->measurements[$key] ?? null; /* @var Measurement $measurement */
-        if (!$measurement) {
+        $className = $this->measurements[$key] ?? null;
+        if (!$className) {
             return [];
         }
+        $measurement = new $className($this->db); /* @var Measurement $measurement */
 
         $slots = $this->prepareSlots($resolution, $interval);
         $result = [];

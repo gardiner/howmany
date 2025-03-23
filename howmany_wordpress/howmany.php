@@ -36,11 +36,11 @@ class HowMany {
         $this->store = new Store($this->db);
 
         $measurements = [
-            'views' => new Views('Views', $this->db),
-            'visits' => new Visits('Visits', $this->db),
+            'views' => Views::class,
+            'visits' => Visits::class,
         ];
 
-        $this->measurementService = new MeasurementService($measurements, $this->store);
+        $this->measurementService = new MeasurementService($measurements, $this->store, $this->db);
         $this->api = new Api($this->measurementService, $this->db);
 
         if (function_exists('add_action')) {
