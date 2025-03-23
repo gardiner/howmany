@@ -2,6 +2,7 @@ $blue: #0073aa;
 
 .howmany {
     @import "elements";
+    @import "custom";
 
     max-width: 1000px;
     box-sizing: border-box;
@@ -73,7 +74,8 @@ $blue: #0073aa;
         }
     }
 
-    .valuetable {
+    .valuetable,
+    .listtable {
         clear: both;
 
         table {

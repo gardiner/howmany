@@ -11,6 +11,10 @@ License: custom
 
 namespace OleTrenner\HowMany;
 
+use OleTrenner\HowMany\Measurements\ExternalReferers;
+use OleTrenner\HowMany\Measurements\Urls;
+use OleTrenner\HowMany\Measurements\UserAgents;
+use OleTrenner\HowMany\Measurements\UserPlatforms;
 use OleTrenner\HowMany\Measurements\Views;
 use OleTrenner\HowMany\Measurements\VisitCounts;
 use OleTrenner\HowMany\Measurements\VisitDurations;
@@ -39,9 +43,13 @@ class HowMany {
 
         $measurements = [
             'views' => Views::class,
+            'urls' => Urls::class,
             'visits' => Visits::class,
             'visitcounts' => VisitCounts::class,
             'visitdurations' => VisitDurations::class,
+            'useragents' => UserAgents::class,
+            'userplatforms' => UserPlatforms::class,
+            'externalreferers' => ExternalReferers::class,
         ];
 
         $this->measurementService = new MeasurementService($measurements, $this->store, $this->db);

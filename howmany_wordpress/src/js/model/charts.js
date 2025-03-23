@@ -53,7 +53,7 @@ function linechart(canvasElement, data) {
 
 function piechart(canvasElement, data) {
     var reduced = [],
-        sum = _.sumBy(data, function(i) { return i.value; }),
+        sum = _.sumBy(data, 'value'),
         other = 0;
 
     _.each(data, function(i) {
@@ -74,12 +74,20 @@ function piechart(canvasElement, data) {
 
     return new Chart(canvasElement.getContext("2d"), {
         type: 'doughnut',
+        options: {
+            plugins: {
+                legend: {
+                    display: false,
+                },
+            },
+        },
         data: {
             datasets: [
                 {
                     data: reduced,
                 },
             ],
+            labels: _.map(reduced, 'label'),
         },
     });
 }

@@ -1,5 +1,5 @@
 .timeseries
-    h4 {{ measurement.title }}
+    h3 {{ measurement.title }}
     button.toggle(v-for="r in resolutions"
                   type="button"
                   :class="{active: resolution == r.key}"

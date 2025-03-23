@@ -1,0 +1,9 @@
+.chartgrid {
+    display: grid;
+    gap: 3em;
+    grid-template-columns: 1fr 1fr;
+
+    .wide {
+        grid-column-end: span 2;
+    }
+}

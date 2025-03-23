@@ -1,0 +1,14 @@
+.listtable
+    table
+        thead
+            tr
+                th #
+                th %
+                th Anzahl
+                th Bezeichnung
+        tbody
+            tr(v-for="row, index in values")
+                td {{index+1}}
+                td {{round(row.rel*100)}}%
+                td {{row.value}}
+                td {{row.label}}

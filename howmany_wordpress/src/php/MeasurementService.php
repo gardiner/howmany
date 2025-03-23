@@ -44,6 +44,8 @@ class MeasurementService
             case MeasurementType::TimeSeries:
                 return $this->applyTimeseries($key, $measurement, $resolution, $interval, $refresh);
             case MeasurementType::Discrete:
+            case MeasurementType::Relative:
+            case MeasurementType::List:
                 return $this->applyDiscrete($key, $measurement, $resolution, $interval, $refresh);
             default:
                 return [];
@@ -130,8 +132,8 @@ class MeasurementService
             }
         } elseif ($resolution == Resolution::Month) {
             $thisMonth = CarbonImmutable::now()->endOfMonth();
-            $firstOfYear = $thisMonth->startOfYear();
-            $endOfYear = $firstOfYear->endOfYear();
+            $firstOfYear = $thisMonth->startOfYear()->subYear();
+            $endOfYear = $thisMonth->endOfYear();
 
             $current = $firstOfYear->copy();
             while ($current < $endOfYear && $current <= $thisMonth) {

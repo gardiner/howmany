@@ -1,4 +1,4 @@
-.barchart
+.piechart
     h3 {{ measurement.title }}
     button.toggle(v-if="false"
                   v-for="r in resolutions"
@@ -6,5 +6,9 @@
                   :class="{active: resolution == r.key}"
                   @click="resolution = r.key") {{r.title}}
     chart(v-if="data"
-          type="barchart"
+          type="piechart"
           :values="data")
+
+
+    listtable(:values="data"
+              :label="'Bezeichnung'")
