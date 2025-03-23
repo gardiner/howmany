@@ -65,7 +65,7 @@ function piechart(canvasElement, data) {
     });
 
     if (other > 0) {
-        reduced.push({label: 'Other', value: other});
+        reduced.push({label: 'Andere', value: other});
     }
 
     _.each(reduced, function(i, n) {

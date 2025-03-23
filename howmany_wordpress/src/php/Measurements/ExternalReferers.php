@@ -42,8 +42,8 @@ class ExternalReferers implements Measurement
         foreach ($result as $row) {
             $values[] = [
                 'key' => $row->referer,
-                'value' => $row->num,
-                'rel' => 1. * $row->num / $total,
+                'value' => (int)$row->num,
+                'rel' => 1. * (int)$row->num / $total,
             ];
         }
         return $values;
