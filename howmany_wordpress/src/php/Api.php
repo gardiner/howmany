@@ -49,7 +49,7 @@ class Api {
     protected function handle_measurement(mixed $params): mixed
     {
         $key = $params['key'] ?? null;
-        $resolution = Resolution::tryFrom($params['resolution'] ?? null);
+        $resolution = isset($params['resolution']) ? Resolution::tryFrom($params['resolution']) : null;
         $interval = $params['interval'] ?? null;
         $refresh = $params['refresh'] ?? false;
         return $this->measurementService->applyMeasurement($key, $resolution, $interval, $refresh);

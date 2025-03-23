@@ -10,41 +10,43 @@ import measurementmodel from 'model/measurements';
 
 const RESOLUTIONS = [
     {
-        key: 'day',
-        title: 'Tag',
+        key: 'all',
+        title: 'Insgesamt',
+    },
+    {
+        key: 'year',
+        title: 'Jahr',
     },
     {
         key: 'month',
         title: 'Monat',
     },
     {
-        key: 'year',
-        title: 'Jahr',
+        key: 'day',
+        title: 'Tag',
     },
 ];
 
 
 export default {
-    template: require('components/_timeseries.pug').default,
+    template: require('components/_barchart.pug').default,
     props: ['measurement'],
     data: function() {
         return {
             resolutions: RESOLUTIONS,
-            resolution: 'day',
-            interval: null,
+            resolution: 'all',
             data: null,
         };
     },
     watch: {
         resolution: 'update',
-        interval: 'update',
     },
     methods: {
         update: function() {
             var self = this;
-            api.measurements.get(_.get(self.measurement, 'key'), self.resolution, self.interval)
+            api.measurements.get(_.get(self.measurement, 'key'), self.resolution, null)
             .then(function(result) {
-                self.data = measurementmodel.timeseries_data(result, {
+                self.data = measurementmodel.barchart_data(result, {
                     title: self.measurement.title,
                 });
             });

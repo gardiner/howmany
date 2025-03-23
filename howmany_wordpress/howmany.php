@@ -12,6 +12,8 @@ License: custom
 namespace OleTrenner\HowMany;
 
 use OleTrenner\HowMany\Measurements\Views;
+use OleTrenner\HowMany\Measurements\VisitCounts;
+use OleTrenner\HowMany\Measurements\VisitDurations;
 use OleTrenner\HowMany\Measurements\Visits;
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -38,6 +40,8 @@ class HowMany {
         $measurements = [
             'views' => Views::class,
             'visits' => Visits::class,
+            'visitcounts' => VisitCounts::class,
+            'visitdurations' => VisitDurations::class,
         ];
 
         $this->measurementService = new MeasurementService($measurements, $this->store, $this->db);

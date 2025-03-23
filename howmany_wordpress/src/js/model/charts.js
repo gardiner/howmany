@@ -87,6 +87,10 @@ function piechart(canvasElement, data) {
 function barchart(canvasElement, data) {
     return new Chart(canvasElement.getContext("2d"), {
         type: 'bar',
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+        },
         data: {
             labels: data.x || [],
             datasets: [

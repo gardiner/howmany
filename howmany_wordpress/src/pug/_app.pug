@@ -1,6 +1,9 @@
 .howmany.app
     template(v-for="m in measurements")
-        timeseries(:measurement="m")
+        timeseries(v-if="m.type == 'timeseries'"
+                   :measurement="m")
+        barchart(v-else-if="m.type == 'discrete'"
+                 :measurement="m")
 
     h3 Visits in last {{ config.days_limit }} days ({{ visits.stats.total }} total)
 
