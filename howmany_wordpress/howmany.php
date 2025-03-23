@@ -111,7 +111,8 @@ class HowMany {
             preg_match("/^\/wp-cron/i", $url) ||
             preg_match("/^\/wp-admin/i", $url) ||
             preg_match("/^\/wp-login/i", $url) ||
-            preg_match("/^\/wp-json/i", $url) ||
+            preg_match("/wp-json/i", $url) ||
+            preg_match("/wp-includes/i", $url) ||
             preg_match("/xmlrpc.php/i", $url) ||
             preg_match("/^\/howmany_wordpress/i", $url)) {
             return;
