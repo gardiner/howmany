@@ -1,12 +1,34 @@
+h1 {
+    .dashicons {
+        line-height: inherit;
+        width: auto;
+        height: auto;
+        font-size: inherit;
+        color: $blue;
+    }
+}
+
 button {
-    margin: 0.5em;
-    padding: 0.2em 1.5em;
-    border: 1px solid darkgray;
+    margin: 0.3em;
+    padding: 0.25em 1.5em;
+    border: 1px solid $blue;
+    border-radius: 5px;
 
     &.toggle {
+        cursor: pointer;
+        transition: background 0.1s;
+
+        &:hover {
+            background: rgba(white, 0.7);
+        }
+
         &.active {
-            background: darkgray;
+            background: $blue;
             color: white;
+
+            &:hover {
+                background: mix(white, $blue, 20%);
+            }
         }
     }
 }

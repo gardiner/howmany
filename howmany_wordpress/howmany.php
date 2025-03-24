@@ -77,7 +77,7 @@ class HowMany {
     }
 
     public function init_menus() {
-        add_menu_page('HowMany', 'HowMany', 'manage_options', 'hm_overview', array($this, 'render_adminpage'));
+        add_menu_page('HowMany', 'HowMany', 'manage_options', 'hm_overview', array($this, 'render_adminpage'), 'dashicons-chart-bar');
     }
 
     public function render_adminpage() {

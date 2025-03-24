@@ -7,11 +7,28 @@ import Chart from 'chart.js/auto';
 import config from 'config';
 
 
+const CHART_BG = '#ffffff77';
+
+
 //setup charts
-$.extend(Chart.defaults.global, {
+_.extend(Chart.defaults.global, {
     animation: false,
     tooltipFontSize: 10,
     tooltipCaretSize: 4
+});
+
+Chart.register({
+    id: 'bg_plugin',
+    beforeDraw: function (chart, args, options) {
+        if (chart.chartArea && chart.config.options.chartBackgroundColor) {
+            var { ctx, chartArea } = chart;
+
+            ctx.save();
+            ctx.fillStyle = chart.config.options.chartBackgroundColor;
+            ctx.fillRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+            ctx.restore();
+        }
+    }
 });
 
 
@@ -37,6 +54,7 @@ function linechart(canvasElement, data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            chartBackgroundColor: CHART_BG,
         },
         data: {
             labels: data.x || [],
@@ -98,6 +116,7 @@ function barchart(canvasElement, data) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            chartBackgroundColor: CHART_BG,
         },
         data: {
             labels: data.x || [],
