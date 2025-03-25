@@ -21,6 +21,9 @@ export default {
         scale: 'update',
     },
     methods: {
+        /**
+         * First call to update happens when scale is set to its default values.
+         */
         update: function() {
             var self = this,
                 scale = self.scale || {};
@@ -34,7 +37,4 @@ export default {
             });
         },
     },
-    mounted: function() {
-        this.update();
-    }
 };
