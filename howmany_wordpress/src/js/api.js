@@ -37,12 +37,17 @@ function request(endpoint, params) {
 
 
 export default {
+    timescales: {
+        list: function() {
+            return request('timescales');
+        },
+    },
     measurements: {
-        get: function(key, resolution, interval) {
-            return request('measurement', {key, resolution, interval});
+        get: function(key, timescale, page) {
+            return request('measurement', {key, timescale, page});
         },
         list: function() {
             return request('measurements');
-        }
+        },
     }
 };

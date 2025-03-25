@@ -5,23 +5,8 @@ import _ from 'lodash';
 
 import api from 'api';
 import charts from 'model/charts';
+import config from 'config';
 import measurementmodel from 'model/measurements';
-
-
-const RESOLUTIONS = [
-    {
-        key: 'day',
-        title: 'Tag',
-    },
-    {
-        key: 'month',
-        title: 'Monat',
-    },
-    {
-        key: 'year',
-        title: 'Jahr',
-    },
-];
 
 
 export default {
@@ -29,20 +14,20 @@ export default {
     props: ['measurement'],
     data: function() {
         return {
-            resolutions: RESOLUTIONS,
-            resolution: 'day',
-            interval: null,
+            timescales: config.timescales,
+            timescale: config.timescales[0].key,
+            page: 0,
             data: null,
         };
     },
     watch: {
-        resolution: 'update',
-        interval: 'update',
+        timescale: 'update',
+        page: 'update',
     },
     methods: {
         update: function() {
             var self = this;
-            api.measurements.get(_.get(self.measurement, 'key'), self.resolution, self.interval)
+            api.measurements.get(_.get(self.measurement, 'key'), self.timescale, self.page)
             .then(function(result) {
                 self.data = measurementmodel.timeseries_data(result, {
                     title: self.measurement.title,
@@ -52,5 +37,6 @@ export default {
     },
     mounted: function() {
         this.update();
+        console.log(this.timescales);
     }
 };

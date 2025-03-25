@@ -17,7 +17,7 @@ class Store {
     public function getValue(string $key, string $slot): mixed
     {
         $result = $this->db->load(static::CACHETABLENAME, 'measurement=%s AND slot=%s', [$key, $slot]);
-        $value = $result->value;
+        $value = $result ? $result->value : null;
         return $value ? json_decode($value, true) : $value;
     }
 

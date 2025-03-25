@@ -7,7 +7,7 @@ use OleTrenner\HowMany\Measurements\Views;
 
 class MeasurementService
 {
-    const USE_CACHE = true;
+    const USE_CACHE = false;
 
     public function __construct(
         protected array $measurements,
@@ -15,6 +15,36 @@ class MeasurementService
         protected Database $db,
     )
     {
+    }
+
+    public function getTimeScaleDefinitions()
+    {
+        return [
+            [
+                'key' => 'recent',
+                'title' => 'Aktuell',
+                'resolution' => Resolution::Day,
+                'interval' => Interval::Recent,
+            ],
+            [
+                'key' => 'monthly',
+                'title' => 'Monat',
+                'resolution' => Resolution::Day,
+                'interval' => Interval::Month,
+            ],
+            [
+                'key' => 'yearly',
+                'title' => 'Jahr',
+                'resolution' => Resolution::Month,
+                'interval' => Interval::Year,
+            ],
+            [
+                'key' => 'all',
+                'title' => 'Insgesamt',
+                'resolution' => Resolution::Year,
+                'interval' => Interval::All,
+            ],
+        ];
     }
 
     public function getMeasurementDefinitions()
@@ -31,40 +61,47 @@ class MeasurementService
         return $result;
     }
 
-    public function applyMeasurement(?string $key, ?Resolution $resolution, ?array $interval, bool $refresh): array
+    public function applyMeasurement(?string $measurementKey, ?string $timeScaleKey, int $page, bool $refresh): array
     {
-        $className = $this->measurements[$key] ?? null;
-        if (!$className) {
+        $className = $this->measurements[$measurementKey] ?? null;
+        $timeScale = $this->getTimeScale($timeScaleKey);
+        if (!$className || !$timeScale) {
             return [];
         }
-        $measurement = new $className($this->db);
-        /* @var Measurement $measurement */
+        $measurement = new $className($this->db); /** @var Measurement $measurement */
 
         switch ($measurement->getType()) {
             case MeasurementType::TimeSeries:
-                return $this->applyTimeseries($key, $measurement, $resolution, $interval, $refresh);
+                return $this->applyTimeseries($measurementKey, $measurement, $timeScale, $page, $refresh);
             case MeasurementType::Discrete:
             case MeasurementType::Relative:
             case MeasurementType::List:
-                return $this->applyDiscrete($key, $measurement, $resolution, $interval, $refresh);
+                return $this->applyDiscrete($measurementKey, $measurement, $timeScale, $page, $refresh);
             default:
                 return [];
         }
     }
 
-    protected function applyDiscrete(string $key, Measurement $measurement, Resolution $resolution, ?array $interval, bool $refresh): array
+    protected function getTimeScale(?string $key): ?array
     {
-        $today = CarbonImmutable::now();
+        $definitions = $this->getTimeScaleDefinitions();
+        foreach($definitions as $definition) {
+            if ($definition['key'] == $key) {
+                return $definition;
+            }
+        }
+        return null;
+    }
+
+    protected function applyDiscrete(string $key, Measurement $measurement, array $timeScale, int $page, bool $refresh): array
+    {
+        list($start, $end) = $this->getBoundaries($timeScale, $page);
         $slot = [
-            'start' => 0,
-            'end' => $today->endOfDay()->timestamp,
+            'start' => $start->timestamp,
+            'end' => $end->timestamp,
             'id' => '',
             'is_current' => true,
         ];
-        switch ($resolution) {
-            case Resolution::Day:
-                break;
-        }
 
         $value = null;
 
@@ -85,9 +122,9 @@ class MeasurementService
         ];
     }
 
-    protected function applyTimeseries(string $key, Measurement $measurement, Resolution $resolution, ?array $interval, bool $refresh): array
+    protected function applyTimeseries(string $key, Measurement $measurement, array $timeScale, int $page, bool $refresh): array
     {
-        $slots = $this->prepareSlots($resolution, $interval);
+        $slots = $this->prepareSlots($timeScale, $page);
         $result = [];
         foreach ($slots as $slot) {
             $value = null;
@@ -111,17 +148,16 @@ class MeasurementService
         return $result;
     }
 
-    protected function prepareSlots(?Resolution $resolution, ?array $interval): array
+    protected function prepareSlots(array $timeScale, int $page): array
     {
+        $interval = $timeScale['interval'];
+        $resolution = $timeScale['resolution'];
+        list($start, $end) = $this->getBoundaries($timeScale, $page);
+
         $slots = [];
-
-        if ($resolution == Resolution::Day) {
-            $today = CarbonImmutable::now();
-            $firstOfMonth = $today->startOfMonth();
-            $endOfMonth = $firstOfMonth->endOfMonth();
-
-            $current = $firstOfMonth->copy();
-            while ($current < $endOfMonth && $current <= $today) {
+        $current = $start->copy();
+        while ($current < $end) {
+            if ($resolution == Resolution::Day) {
                 $slots[] = [
                     'start' => $current->startOfDay()->timestamp,
                     'end' => $current->endOfDay()->timestamp,
@@ -129,14 +165,7 @@ class MeasurementService
                     'is_current' => $current->isToday(),
                 ];
                 $current = $current->addDay();
-            }
-        } elseif ($resolution == Resolution::Month) {
-            $thisMonth = CarbonImmutable::now()->endOfMonth();
-            $firstOfYear = $thisMonth->startOfYear()->subYear();
-            $endOfYear = $thisMonth->endOfYear();
-
-            $current = $firstOfYear->copy();
-            while ($current < $endOfYear && $current <= $thisMonth) {
+            } elseif ($resolution == Resolution::Month) {
                 $slots[] = [
                     'start' => $current->startOfMonth()->timestamp,
                     'end' => $current->endOfMonth()->timestamp,
@@ -144,11 +173,7 @@ class MeasurementService
                     'is_current' => $current->isCurrentMonth(),
                 ];
                 $current = $current->addMonth();
-            }
-        } elseif ($resolution == Resolution::Year) {
-            $thisYear = CarbonImmutable::now()->endOfYear();
-            $current = $thisYear->subYears(10);
-            while ($current <= $thisYear) {
+            } elseif ($resolution == Resolution::Year) {
                 $slots[] = [
                     'start' => $current->startOfYear()->timestamp,
                     'end' => $current->endOfYear()->timestamp,
@@ -158,7 +183,33 @@ class MeasurementService
                 $current = $current->addYear();
             }
         }
-
         return $slots;
     }
+
+    protected function getBoundaries(array $timeScale, int $page): array
+    {
+        $today = CarbonImmutable::now();
+
+        $interval = $timeScale['interval']; /** @var Interval $interval */
+        switch ($interval) {
+            case Interval::All:
+                $start = $today->startOfYear()->subYears(10);
+                $end = $today->endOfDay();
+                break;
+            case Interval::Year:
+                $start = $today->startOfYear();
+                $end = $today->endOfDay();
+                break;
+            case Interval::Month:
+                $start = $today->startOfMonth();
+                $end = $today->endOfDay();
+                break;
+            case Interval::Recent:
+                $start = $today->startOfDay()->subDays(30);
+                $end = $today->endOfDay();
+                break;
+        }
+        return [$start, $end];
+    }
+
 }

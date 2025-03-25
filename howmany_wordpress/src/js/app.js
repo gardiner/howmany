@@ -27,8 +27,9 @@ const app = {
     created: function() {
         var self = this;
 
-        api.measurements.list()
-        .then(function(measurements) {
+        $.when(api.timescales.list(), api.measurements.list())
+        .then(function(timescales, measurements) {
+            config.timescales = timescales;
             self.measurements = measurements;
         });
     }

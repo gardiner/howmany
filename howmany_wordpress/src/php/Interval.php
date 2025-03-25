@@ -2,9 +2,10 @@
 
 namespace OleTrenner\HowMany;
 
-enum Resolution: string
+enum Interval: string
 {
-    case Day = 'day';
+    case Recent = 'recent';
     case Month = 'month';
     case Year = 'year';
+    case All = 'all';
 }

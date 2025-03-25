@@ -1,4 +1,8 @@
 .howmany.app
+
+    h2.nav-tab-wrapper
+        a.nav-tab.nav-tab-active(href="#") Überblick
+
     .chartgrid
         template(v-for="m in measurements")
             timeseries.wide(v-if="m.type == 'timeseries'"

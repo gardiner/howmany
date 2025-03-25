@@ -19,7 +19,7 @@ export default {
     methods: {
         update: function() {
             var self = this;
-            api.measurements.get(_.get(self.measurement, 'key'), 'all', null)
+            api.measurements.get(_.get(self.measurement, 'key'), 'all', 0)
             .then(function(result) {
                 self.data = measurementmodel.list_data(result);
             });

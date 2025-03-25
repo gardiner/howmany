@@ -1,9 +1,11 @@
 .timeseries
     h3 {{ measurement.title }}
-    button.toggle(v-for="r in resolutions"
+
+    button.toggle(v-for="t in timescales"
                   type="button"
-                  :class="{active: resolution == r.key}"
-                  @click="resolution = r.key") {{r.title}}
+                  :class="{active: timescale == t.key}"
+                  @click="timescale = t.key") {{t.title}}
+
     chart(v-if="data"
           type="linechart"
           :values="data")

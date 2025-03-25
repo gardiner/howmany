@@ -41,6 +41,11 @@ class Api {
         exit;
     }
 
+    protected function handle_timescales(mixed $params): mixed
+    {
+        return $this->measurementService->getTimeScaleDefinitions();
+    }
+
     protected function handle_measurements(mixed $params): mixed
     {
         return $this->measurementService->getMeasurementDefinitions();
@@ -49,9 +54,9 @@ class Api {
     protected function handle_measurement(mixed $params): mixed
     {
         $key = $params['key'] ?? null;
-        $resolution = isset($params['resolution']) ? Resolution::tryFrom($params['resolution']) : null;
-        $interval = $params['interval'] ?? null;
+        $timeScale = $params['timescale'] ?? null;
+        $page = $params['page'] ?? 0;
         $refresh = $params['refresh'] ?? false;
-        return $this->measurementService->applyMeasurement($key, $resolution, $interval, $refresh);
+        return $this->measurementService->applyMeasurement($key, $timeScale, $page, $refresh);
     }
 }
