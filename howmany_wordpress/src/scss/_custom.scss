@@ -1,3 +1,30 @@
+.small {
+    font-size: 80%;
+    opacity: 0.7;
+}
+
+.dim {
+    opacity: 0.4;
+}
+
+.clickable {
+    color: $blue;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.normal {
+    font-weight: normal;
+}
+
+.dashicons {
+    line-height: inherit;
+    width: auto;
+    height: auto;
+    font-size: inherit;
+    color: $blue;
+}
+
 .chartgrid {
     display: grid;
     gap: 3em;
@@ -7,3 +34,10 @@
         grid-column-end: span 2;
     }
 }
+
+.timeselector {
+    margin: 1em 0;
+    display: flex;
+    gap: 1em;
+}
+

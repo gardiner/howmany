@@ -4,8 +4,6 @@ import $ from 'jquery';
 import _ from 'lodash';
 
 import api from 'api';
-import charts from 'model/charts';
-import config from 'config';
 import measurementmodel from 'model/measurements';
 
 
@@ -14,22 +12,23 @@ export default {
     props: ['measurement'],
     data: function() {
         return {
-            timescales: config.timescales,
-            timescale: config.timescales[0].key,
-            page: 0,
+            scale: null,
             data: null,
+            timespan: null,
         };
     },
     watch: {
-        timescale: 'update',
-        page: 'update',
+        scale: 'update',
     },
     methods: {
         update: function() {
-            var self = this;
-            api.measurements.get(_.get(self.measurement, 'key'), self.timescale, self.page)
+            var self = this,
+                scale = self.scale || {};
+
+            api.measurements.get(_.get(self.measurement, 'key'), scale.timescale, scale.page)
             .then(function(result) {
-                self.data = measurementmodel.timeseries_data(result, {
+                self.timespan = result.timespan;
+                self.data = measurementmodel.timeseries_data(result.values, {
                     title: self.measurement.title,
                 });
             });
@@ -37,6 +36,5 @@ export default {
     },
     mounted: function() {
         this.update();
-        console.log(this.timescales);
     }
 };

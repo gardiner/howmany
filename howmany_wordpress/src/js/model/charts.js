@@ -55,6 +55,11 @@ function linechart(canvasElement, data) {
             responsive: true,
             maintainAspectRatio: false,
             chartBackgroundColor: CHART_BG,
+            scales: {
+                y: {
+                    min: 0,
+                },
+            },
         },
         data: {
             labels: data.x || [],

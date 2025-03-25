@@ -11,21 +11,6 @@ $blue: #5391C8;
         box-sizing: inherit;
     }
 
-    .small {
-        font-size: 80%;
-        opacity: 0.7;
-    }
-
-    .dim {
-        opacity: 0.4;
-    }
-
-    .clickable {
-        color: $blue;
-        text-decoration: underline;
-        cursor: pointer;
-    }
-
     .details {
         margin: 2em 0;
 

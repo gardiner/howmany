@@ -9,7 +9,7 @@ import piechart from '../components/piechart';
 function timeseries_data(data, options) {
     return {
         label: _.get(options, 'title'),
-        x: _.map(data, 'slot'),
+        x: _.map(data, 'label'),
         y: _.map(data, 'value'),
     };
 }

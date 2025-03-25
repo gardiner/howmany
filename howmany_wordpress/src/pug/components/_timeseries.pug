@@ -1,10 +1,7 @@
 .timeseries
-    h3 {{ measurement.title }}
+    h3 {{ measurement.title }} #[span.dim.normal ({{ timespan }})]
 
-    button.toggle(v-for="t in timescales"
-                  type="button"
-                  :class="{active: timescale == t.key}"
-                  @click="timescale = t.key") {{t.title}}
+    timeselector(v-model="scale")
 
     chart(v-if="data"
           type="linechart"

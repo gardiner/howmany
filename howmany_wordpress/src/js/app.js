@@ -16,8 +16,6 @@ autoloader.init();
 const app = {
     template: require('_app.pug').default,
     data: function() {
-        var self = this;
-
         return {
             config: config,
             measurements: null,

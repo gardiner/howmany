@@ -1,0 +1,16 @@
+.timeselector
+    .timescale
+        button.toggle(v-for="t in timescales"
+                      type="button"
+                      :class="{active: is_selected_timescale(t.key)}"
+                      @click="select_timescale(t.key)") {{t.title}}
+
+    .page
+        button(type="button"
+               @click="go_back") #[span.dashicons.dashicons-arrow-left-alt]
+        button(type="button"
+               :disabled="is_start"
+               @click="reset_page") #[span.dashicons.dashicons-update]
+        button(type="button"
+               :disabled="is_start"
+               @click="go_forward") #[span.dashicons.dashicons-arrow-right-alt]

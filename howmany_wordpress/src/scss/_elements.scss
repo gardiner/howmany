@@ -1,20 +1,22 @@
 h1 {
     .dashicons {
-        line-height: inherit;
-        width: auto;
-        height: auto;
-        font-size: inherit;
         color: $blue;
     }
 }
 
 button {
     margin: 0.2em;
-    padding: 0.25em 1em;
+    padding: 0.25em 0.5em;
     border-radius: 3px;
-    border: 1px solid black;
+    border: 1px solid #aaa;
     color: black;
     background: #ddd;
+    cursor: pointer;
+
+    &[disabled] {
+        opacity: 0.3;
+        cursor: default;
+    }
 
     &.toggle {
         border: 1px solid $blue;
