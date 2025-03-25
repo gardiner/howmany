@@ -30,7 +30,7 @@ class Urls implements Measurement
         $result = $this->db->load_all_extended(
             'l.url, count(l.id) num',
             Store::LOGTABLENAME . ' l',
-            'l.time >= %d AND l.time <= %d GROUP BY l.url ORDER BY num DESC',
+            'l.time >= %d AND l.time <= %d GROUP BY l.url ORDER BY num DESC LIMIT 100',
             [$start, $end]
         );
         $total = 0;

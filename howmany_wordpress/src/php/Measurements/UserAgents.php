@@ -30,7 +30,7 @@ class UserAgents implements Measurement
         $result = $this->db->load_all_extended(
             'useragent, count(id) num',
             Store::LOGTABLENAME,
-            'time >= %d AND time <= %d GROUP BY useragent ORDER BY num DESC',
+            'time >= %d AND time <= %d GROUP BY useragent ORDER BY num DESC LIMIT 100',
             [$start, $end]
         );
         $count = $this->count($result);
