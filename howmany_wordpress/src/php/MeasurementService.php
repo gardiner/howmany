@@ -138,7 +138,7 @@ class MeasurementService
             $result[] = [
                 'slot' => $slot['id'],
                 'label' => $slot['label'],
-                'value' => $value,
+                'value' => $slot['is_future'] ? null : $value,
             ];
         }
         return $result;
@@ -156,6 +156,7 @@ class MeasurementService
                     'id' => $current->format('Y-m-d'),
                     'label' => $current->format('j.m.Y'),
                     'is_current' => $current->isToday(),
+                    'is_future' => $current->startOfDay()->isFuture(),
                 ];
                 $current = $current->addDay();
             } elseif ($resolution == Resolution::Month) {
@@ -165,6 +166,7 @@ class MeasurementService
                     'id' => $current->format('Y-m'),
                     'label' => $current->format('M Y'),
                     'is_current' => $current->isCurrentMonth(),
+                    'is_future' => $current->startOfDay()->isFuture(),
                 ];
                 $current = $current->addMonth();
             } elseif ($resolution == Resolution::Year) {
@@ -174,6 +176,7 @@ class MeasurementService
                     'id' => $current->format('Y'),
                     'label' => $current->format('Y'),
                     'is_current' => $current->isCurrentYear(),
+                    'is_future' => $current->startOfDay()->isFuture(),
                 ];
                 $current = $current->addYear();
             }
