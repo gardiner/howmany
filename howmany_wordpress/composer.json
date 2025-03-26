@@ -13,6 +13,10 @@
   },
   "extra": {
     "version": "0.1.0",
+    "update_version_filelist": [
+      "package.json",
+      "howmany.php"
+    ],
     "assets": {
       "path": "."
     }
