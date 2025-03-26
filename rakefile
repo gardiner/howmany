@@ -18,8 +18,11 @@ end
 
 desc 'Packages plugins'
 task :package => [:compile_prod] do
+    require 'json'
+    composer = JSON.load(File.open('howmany_wordpress/composer.json'))
+    current_version = composer['extra']['version']
     target = "./-package/howmany_wordpress_#{current_version}"
     sh "rm -rf #{target}" if File.exist? target
     sh "mkdir -p #{target}" if not File.exist? target
-    sh "rsync -vr --copy-links howmany_wordpress/ #{target}"
+    sh "rsync -vr --copy-links --exclude node_modules howmany_wordpress/ #{target}"
 end
