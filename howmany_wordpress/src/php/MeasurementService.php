@@ -21,9 +21,9 @@ class MeasurementService
     {
         return [
             [
-                'key' => 'recent',
-                'title' => 'Aktuell',
-                'resolution' => Resolution::Day,
+                'key' => 'daily',
+                'title' => 'Tag',
+                'resolution' => Resolution::Hour,
                 'interval' => Interval::Recent,
             ],
             [
@@ -31,6 +31,7 @@ class MeasurementService
                 'title' => 'Monat',
                 'resolution' => Resolution::Day,
                 'interval' => Interval::Month,
+                'is_default' => true,
             ],
             [
                 'key' => 'yearly',
@@ -149,16 +150,26 @@ class MeasurementService
         $slots = [];
         $current = $start->copy();
         while ($current < $end) {
-            if ($resolution == Resolution::Day) {
+            if ($resolution == Resolution::Hour) {
                 $slots[] = [
-                    'start' => $current->startOfDay()->timestamp,
-                    'end' => $current->endOfDay()->timestamp,
-                    'id' => $current->format('Y-m-d'),
-                    'label' => $current->format('j.m.Y'),
-                    'is_current' => $current->isToday(),
-                    'is_future' => $current->startOfDay()->isFuture(),
+                    'start' => $current->timestamp,
+                    'end' => $current->endOfHour()->timestamp,
+                    'id' => $current->format('Y-m-d-H'),
+                    'label' => $current->format('j.m., G') . ' Uhr',
+                    'is_current' => $current->endOfHour()->isFuture(),
+                    'is_future' => $current->isFuture(),
                 ];
-                $current = $current->addDay();
+                $current = $current->addHour();
+            } elseif ($resolution == Resolution::Day) {
+                    $slots[] = [
+                        'start' => $current->startOfDay()->timestamp,
+                        'end' => $current->endOfDay()->timestamp,
+                        'id' => $current->format('Y-m-d'),
+                        'label' => $current->format('j.m.Y'),
+                        'is_current' => $current->isToday(),
+                        'is_future' => $current->startOfDay()->isFuture(),
+                    ];
+                    $current = $current->addDay();
             } elseif ($resolution == Resolution::Month) {
                 $slots[] = [
                     'start' => $current->startOfMonth()->timestamp,
@@ -186,7 +197,7 @@ class MeasurementService
 
     protected function getBoundaries(array $timeScale, int $page): array
     {
-        $today = CarbonImmutable::now()->locale('de');
+        $start = $end = $today = CarbonImmutable::now()->locale('de');
 
         $interval = $timeScale['interval']; /** @var Interval $interval */
         switch ($interval) {
@@ -203,8 +214,8 @@ class MeasurementService
                 $end = $start->endOfMonth();
                 break;
             case Interval::Recent:
-                $end = $today->endOfDay()->subDays($page * 30);
-                $start = $end->startOfDay()->subDays(29);
+                $end = $today->endOfDay()->subDays($page * 3);
+                $start = $end->startOfDay()->subDays(2);
                 break;
         }
         return [$start, $end];

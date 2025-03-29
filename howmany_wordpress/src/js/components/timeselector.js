@@ -63,7 +63,7 @@ export default {
     created: function() {
         if (!this.proxy) {
             this.proxy = {
-                timescale: this.timescales[0].key,
+                timescale: _.get(_.find(this.timescales, 'is_default'), 'key'),
                 page: 0,
             };
         }
