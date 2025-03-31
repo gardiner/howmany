@@ -1,3 +1,11 @@
+## 1.1.0 (31.03.2025)
+
+* added refresh, adjusted is_current calculation
+* unified different measurement components
+* added hour resolution, specify default timescale in config
+* updated build task, package-lock.json
+* deleted obsolete file
+
 ## 1.0.0 (26.03.2025)
 
 * updated composer.json/toolkit config
