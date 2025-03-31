@@ -4,11 +4,4 @@
 
     .chartgrid
         template(v-for="m in measurements")
-            timeseries.wide(v-if="m.type == 'timeseries'"
-                            :measurement="m")
-            barchart(v-else-if="m.type == 'discrete'"
-                     :measurement="m")
-            piechart(v-else-if="m.type == 'relative'"
-                     :measurement="m")
-            list.wide(v-else-if="m.type == 'list'"
-                      :measurement="m")
+            measurement(:measurement="m")

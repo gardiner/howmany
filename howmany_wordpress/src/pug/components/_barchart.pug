@@ -1,8 +1,0 @@
-.barchart
-    h3 {{ measurement.title }} #[span.dim.normal ({{ timespan }})]
-
-    timeselector(v-model="scale")
-
-    chart(v-if="data"
-          type="barchart"
-          :values="data")

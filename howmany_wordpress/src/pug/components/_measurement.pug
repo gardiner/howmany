@@ -1,0 +1,12 @@
+.measurement(:class="config.container_class")
+    h3 {{ measurement.title }} #[span.dim.normal ({{ timespan }})]
+
+    timeselector(v-model="scale")
+
+    chart(v-if="chart_data && config.is_chart_visible"
+          :type="config.chart_type"
+          :values="chart_data")
+
+    valuetable(v-if="chart_data && config.is_valuelist_visible"
+               :values="chart_data"
+               :label="'Bezeichnung'")

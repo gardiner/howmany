@@ -2,8 +2,6 @@
 
 import $ from 'jquery';
 import _ from 'lodash';
-import barchart from '../components/barchart';
-import piechart from '../components/piechart';
 
 
 function timeseries_data(data, options) {
@@ -22,7 +20,6 @@ function barchart_data(data, options) {
         y: _.map(values, 'value'),
     };
 }
-
 
 function piechart_data(data, options) {
     return _.map(_.get(data, 'values'), function(item) {
