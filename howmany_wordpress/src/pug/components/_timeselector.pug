@@ -1,4 +1,4 @@
-.timeselector
+.timeselector.flexrow
     .timescale
         button.toggle(v-for="t in timescales"
                       type="button"
@@ -7,10 +7,13 @@
 
     .page
         button(type="button"
-               @click="go_back") #[span.dashicons.dashicons-arrow-left-alt]
+               title="Zurück blättern"
+               @click="go_back") #[span.dashicons.dashicons-arrow-left-alt2]
         button(type="button"
                :disabled="is_start"
-               @click="reset_page") #[span.dashicons.dashicons-update]
+               title="Vorwärts blättern"
+               @click="go_forward") #[span.dashicons.dashicons-arrow-right-alt2]
         button(type="button"
                :disabled="is_start"
-               @click="go_forward") #[span.dashicons.dashicons-arrow-right-alt]
+               title="Ans Ende blättern"
+               @click="reset_page") #[span.dashicons.dashicons-controls-forward]

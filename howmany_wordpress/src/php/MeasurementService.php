@@ -166,7 +166,7 @@ class MeasurementService
                         'end' => $current->endOfDay()->timestamp,
                         'id' => $current->format('Y-m-d'),
                         'label' => $current->format('j.m.Y'),
-                        'is_current' => $current->isToday(),
+                        'is_current' => $current->endOfDay()->isToday(),
                         'is_future' => $current->startOfDay()->isFuture(),
                     ];
                     $current = $current->addDay();
@@ -176,7 +176,7 @@ class MeasurementService
                     'end' => $current->endOfMonth()->timestamp,
                     'id' => $current->format('Y-m'),
                     'label' => $current->format('M Y'),
-                    'is_current' => $current->isCurrentMonth(),
+                    'is_current' => $current->endOfMonth()->isCurrentMonth(),
                     'is_future' => $current->startOfDay()->isFuture(),
                 ];
                 $current = $current->addMonth();
@@ -186,7 +186,7 @@ class MeasurementService
                     'end' => $current->endOfYear()->timestamp,
                     'id' => $current->format('Y'),
                     'label' => $current->format('Y'),
-                    'is_current' => $current->isCurrentYear(),
+                    'is_current' => $current->endOfYear()->isCurrentYear(),
                     'is_future' => $current->startOfDay()->isFuture(),
                 ];
                 $current = $current->addYear();

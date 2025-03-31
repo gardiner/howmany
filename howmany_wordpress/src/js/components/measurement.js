@@ -62,10 +62,13 @@ export default {
          * First call to update happens when scale is set to its default values.
          */
         update: function() {
+            this.load_data();
+        },
+        load_data: function(refresh) {
             var self = this,
                 scale = self.scale || {};
 
-            api.measurements.get(_.get(self.measurement, 'key'), scale.timescale, scale.page)
+            api.measurements.get(_.get(self.measurement, 'key'), scale.timescale, scale.page, refresh)
             .then(function(result) {
                 self.timespan = result.timespan;
                 self.data = result.values;
