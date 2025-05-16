@@ -21,29 +21,25 @@ class MeasurementService
     {
         return [
             [
-                'key' => 'daily',
-                'title' => 'Tag',
+                'key' => 'hourly',
+                'title' => 'stündlich',
                 'resolution' => Resolution::Hour,
-                'interval' => Interval::Recent,
             ],
             [
-                'key' => 'monthly',
-                'title' => 'Monat',
+                'key' => 'daily',
+                'title' => 'täglich',
                 'resolution' => Resolution::Day,
-                'interval' => Interval::Month,
                 'is_default' => true,
             ],
             [
-                'key' => 'yearly',
-                'title' => 'Jahr',
+                'key' => 'monthly',
+                'title' => 'monatlich',
                 'resolution' => Resolution::Month,
-                'interval' => Interval::Year,
             ],
             [
-                'key' => 'all',
-                'title' => 'Insgesamt',
+                'key' => 'yearly',
+                'title' => 'jährlich',
                 'resolution' => Resolution::Year,
-                'interval' => Interval::All,
             ],
         ];
     }
@@ -70,22 +66,17 @@ class MeasurementService
             return [];
         }
         $measurement = new $className($this->db); /** @var Measurement $measurement */
-        list($start, $end) = $this->getBoundaries($timeScale, $page);
 
-        switch ($measurement->getType()) {
-            case MeasurementType::TimeSeries:
-                $values = $this->applyTimeseries($measurementKey, $measurement, $start, $end, $timeScale['resolution'], $refresh);
-                break;
-            case MeasurementType::Discrete:
-            case MeasurementType::Relative:
-            case MeasurementType::List:
-                $values = $this->applyDiscrete($measurementKey, $measurement, $start, $end, $refresh);
-                break;
-            default:
-                return [];
+        if ($measurement->getType() == MeasurementType::TimeSeries) {
+            list($start, $end) = $this->getTimeseriesBoundaries($timeScale, $page);
+            $values = $this->applyTimeseries($measurementKey, $measurement, $start, $end, $timeScale['resolution'],
+                $refresh);
+        } else {
+            list($start, $end) = $this->getDiscreteBoundaries($timeScale, $page);
+            $values = $this->applyDiscrete($measurementKey, $measurement, $start, $end, $refresh);
         }
         return [
-            'timespan' => $start->format('j.m.Y') . ' - ' . $end->format('j.m.Y'),
+            'timespan' => $start->format('j.m.Y, G:i') . ' Uhr - ' . $end->format('j.m.Y, G:i') . ' Uhr',
             'values' => $values,
         ];
     }
@@ -95,7 +86,7 @@ class MeasurementService
         $slot = [
             'start' => $start->timestamp,
             'end' => $end->timestamp,
-            'id' => $start->format('Y-m-d') . '|' . $end->format('Y-m-d'),
+            'id' => $start->format('Y-m-d-H-i') . '|' . $end->format('Y-m-d-H-i'),
             'is_current' => CarbonImmutable::now()->isBetween($start, $end),
         ];
 
@@ -125,11 +116,11 @@ class MeasurementService
         foreach ($slots as $slot) {
             $value = null;
 
-            if (static::USE_CACHE && !$slot['is_current'] && !$refresh) {
+            if (static::USE_CACHE && !$slot['is_current'] && !$slot['is_future'] && !$refresh) {
                 $value = $this->store->getValue($key, $slot['id']);
             }
 
-            if (is_null($value)) {
+            if (is_null($value) && !$slot['is_future']) {
                 $value = $measurement->getValue($slot['start'], $slot['end']);
                 if (static::USE_CACHE && !is_null($value) && !$slot['is_current']) {
                     $this->store->storeValue($key, $slot['id'], $value);
@@ -155,7 +146,7 @@ class MeasurementService
                     'start' => $current->timestamp,
                     'end' => $current->endOfHour()->timestamp,
                     'id' => $current->format('Y-m-d-H'),
-                    'label' => $current->format('j.m., G') . ' Uhr',
+                    'label' => $current->format('j.m., G') . ':00 Uhr',
                     'is_current' => $current->endOfHour()->isFuture(),
                     'is_future' => $current->isFuture(),
                 ];
@@ -195,27 +186,57 @@ class MeasurementService
         return $slots;
     }
 
-    protected function getBoundaries(array $timeScale, int $page): array
+    protected function getTimeseriesBoundaries(array $timeScale, int $page): array
     {
         $start = $end = $today = CarbonImmutable::now()->locale('de');
 
-        $interval = $timeScale['interval']; /** @var Interval $interval */
-        switch ($interval) {
-            case Interval::All:
-                $start = $today->startOfYear()->subYears(($page + 1) * 10);
-                $end = $today->endOfYear()->subYears($page * 10);
+        $resolution = $timeScale['resolution']; /** @var Resolution $resolution */
+        switch ($resolution) {
+            case Resolution::Year:
+                $yearsPerPage = 10;
+                $end = $today->endOfYear()->subYears($page * $yearsPerPage);
+                $start = $end->startOfYear()->subYears($yearsPerPage - 1);
                 break;
-            case Interval::Year:
-                $start = $today->startOfYear()->subYears($page);
+            case Resolution::Month:
+                $yearsPerPage = 2;
+                $end = $today->endOfYear()->subYears($page * $yearsPerPage);
+                $start = $end->startOfYear()->subYears($yearsPerPage - 1);
+                break;
+            case Resolution::Day:
+                $monthsPerPage = 2;
+                $end = $today->endOfMonth()->subMonths($page * $monthsPerPage);
+                $start = $end->startOfMonth()->subMonths($monthsPerPage - 1);
+                break;
+            case Resolution::Hour:
+                $daysPerPage = 3;
+                $end = $today->endOfDay()->subDays($page * $daysPerPage);
+                $start = $end->startOfDay()->subDays($daysPerPage - 1);
+                break;
+        }
+        return [$start, $end];
+    }
+
+    protected function getDiscreteBoundaries(array $timeScale, int $page): array
+    {
+        $start = $end = $today = CarbonImmutable::now()->locale('de');
+
+        $resolution = $timeScale['resolution']; /** @var Resolution $resolution */
+        switch ($resolution) {
+            case Resolution::Year:
+                $start = $end->startOfYear()->subYears($page);
                 $end = $start->endOfYear();
                 break;
-            case Interval::Month:
-                $start = $today->startOfMonth()->subMonths($page);
+            case Resolution::Month:
+                $start = $end->startOfMonth()->subMonths($page);
                 $end = $start->endOfMonth();
                 break;
-            case Interval::Recent:
-                $end = $today->endOfDay()->subDays($page * 3);
-                $start = $end->startOfDay()->subDays(2);
+            case Resolution::Day:
+                $start = $end->startOfDay()->subDays($page);
+                $end = $start->endOfDay();
+                break;
+            case Resolution::Hour:
+                $start = $end->startOfHour()->subHours($page);
+                $end = $start->endOfHour();
                 break;
         }
         return [$start, $end];

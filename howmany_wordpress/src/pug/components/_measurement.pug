@@ -1,11 +1,12 @@
 .measurement(:class="config.container_class")
-    h3 {{ measurement.title }} #[span.dim.normal ({{ timespan }})]
+    h3 {{ measurement.title }}#[br]#[small.dim.normal {{ timespan }}]
 
     .actions.flexrow
         timeselector(v-model="scale")
         button(type="button"
                title="Ansicht aktualisieren"
-               @click="load_data(true)") #[span.dashicons.dashicons-update]
+               @click="load_data(true)"
+               :disabled="is_loading") #[span.dashicons.dashicons-update]
 
 
     chart(v-if="chart_data && config.is_chart_visible"
