@@ -1,3 +1,7 @@
+## 1.2.0 (23.05.2025)
+
+* removed obsolete Interval enum, adjusted timescales and labels, prevent caching of future values
+
 ## 1.1.0 (31.03.2025)
 
 * added refresh, adjusted is_current calculation
