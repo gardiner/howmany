@@ -152,15 +152,15 @@ class MeasurementService
                 ];
                 $current = $current->addHour();
             } elseif ($resolution == Resolution::Day) {
-                    $slots[] = [
-                        'start' => $current->startOfDay()->timestamp,
-                        'end' => $current->endOfDay()->timestamp,
-                        'id' => $current->format('Y-m-d'),
-                        'label' => $current->format('j.m.Y'),
-                        'is_current' => $current->endOfDay()->isToday(),
-                        'is_future' => $current->startOfDay()->isFuture(),
-                    ];
-                    $current = $current->addDay();
+                $slots[] = [
+                    'start' => $current->startOfDay()->timestamp,
+                    'end' => $current->endOfDay()->timestamp,
+                    'id' => $current->format('Y-m-d'),
+                    'label' => $current->format('j.m.Y'),
+                    'is_current' => $current->endOfDay()->isToday(),
+                    'is_future' => $current->startOfDay()->isFuture(),
+                ];
+                $current = $current->addDay();
             } elseif ($resolution == Resolution::Month) {
                 $slots[] = [
                     'start' => $current->startOfMonth()->timestamp,
