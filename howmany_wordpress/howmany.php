@@ -125,7 +125,7 @@ class HowMany {
         $referer = $_SERVER['HTTP_REFERER'] ?? '';
         try {
             $ua = json_encode(parse_user_agent());
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $ua = '{"_status": "unknown user agent"}';
         }
 
