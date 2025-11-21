@@ -1,6 +1,6 @@
 {
   "name": "howmany",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "dependencies": {
     "chart.js": "^4.4.8",
