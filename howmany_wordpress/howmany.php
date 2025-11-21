@@ -130,17 +130,21 @@ class HowMany {
         }
 
         $db = new Database();
-        $db->query('INSERT INTO ' . Store::LOGTABLENAME . ' ' .
-                    '(time, fingerprint, url, referer, useragent, visit) ' .
-                    'VALUES (' .
-                        '%d, %s, %s, %s, %s,' .
-                        '(SELECT COALESCE(' .
-                            '(SELECT MAX(l.visit) FROM ' . Store::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
-                            '(SELECT MAX(ll.visit)+1 FROM ' . Store::LOGTABLENAME . ' ll),
-                            1)' .
-                        ')' .
-                    ')',
-                    array($now, $fingerprint, $url, $referer, $ua, $fingerprint, $now, self::MAXVISITLENGTH));
+        try {
+            $db->query('INSERT INTO ' . Store::LOGTABLENAME . ' ' .
+                        '(time, fingerprint, url, referer, useragent, visit) ' .
+                        'VALUES (' .
+                            '%d, %s, %s, %s, %s,' .
+                            '(SELECT COALESCE(' .
+                                '(SELECT MAX(l.visit) FROM ' . Store::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
+                                '(SELECT MAX(ll.visit)+1 FROM ' . Store::LOGTABLENAME . ' ll),
+                                1)' .
+                            ')' .
+                        ')',
+                        array($now, $fingerprint, $url, $referer, $ua, $fingerprint, $now, self::MAXVISITLENGTH));
+        } catch (\Exception $e) {
+            //ignored. hopefully does not happen too often.
+        }
     }
 
     public function url($path) {

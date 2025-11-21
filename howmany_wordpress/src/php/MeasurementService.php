@@ -29,12 +29,12 @@ class MeasurementService
                 'key' => 'daily',
                 'title' => 'täglich',
                 'resolution' => Resolution::Day,
-                'is_default' => true,
             ],
             [
                 'key' => 'monthly',
                 'title' => 'monatlich',
                 'resolution' => Resolution::Month,
+                'is_default' => true,
             ],
             [
                 'key' => 'yearly',

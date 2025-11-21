@@ -6,7 +6,7 @@
         button(type="button"
                title="Ansicht aktualisieren"
                @click="load_data(true)"
-               :disabled="is_loading") #[span.dashicons.dashicons-update]
+               :disabled="is_loading") #[span.dashicons.dashicons-update(:class="{spin: is_loading}")]
 
 
     chart(v-if="chart_data && config.is_chart_visible"
