@@ -1,3 +1,7 @@
+## 1.3.0 (22.11.2025)
+
+* allow filtering results
+
 ## 1.2.1 (21.11.2025)
 
 * minor adjustments: added try/catch to prevent errors while tracking, spin refresh button, use "monthly" as default resolution
