@@ -1,5 +1,5 @@
 .measurement(:class="config.container_class")
-    h3 {{ measurement.title }}#[br]#[small.dim.normal {{ timespan }}]
+    h3 {{ measurement.title }} #[span(v-if="filtervalue") für #[code {{filtervalue}}]]#[br]#[small.dim.normal {{ timespan }}]
 
     .actions.flexrow
         timeselector(v-model="scale")

@@ -35,7 +35,7 @@ const CONFIGS = {
 
 export default {
     template: require('components/_measurement.pug').default,
-    props: ['measurement'],
+    props: ['measurement', 'filtervalue'],
     data: function() {
         return {
             scale: null,
@@ -57,6 +57,7 @@ export default {
     },
     watch: {
         scale: 'update',
+        filtervalue: 'update',
     },
     methods: {
         /**
@@ -69,7 +70,7 @@ export default {
             var self = this,
                 scale = self.scale || {};
             self.is_loading = true;
-            api.measurements.get(_.get(self.measurement, 'key'), scale.timescale, scale.page, refresh)
+            api.measurements.get(_.get(self.measurement, 'key'), scale.timescale, scale.page, refresh, this.filtervalue)
             .then(function(result) {
                 self.timespan = result.timespan;
                 self.data = result.values;

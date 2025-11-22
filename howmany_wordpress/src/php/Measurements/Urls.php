@@ -4,6 +4,7 @@ namespace OleTrenner\HowMany\Measurements;
 
 use OleTrenner\HowMany\Database;
 use OleTrenner\HowMany\Measurement;
+use OleTrenner\HowMany\MeasurementHelper;
 use OleTrenner\HowMany\MeasurementType;
 use OleTrenner\HowMany\Store;
 
@@ -25,13 +26,14 @@ class Urls implements Measurement
         return MeasurementType::List;
     }
 
-    public function getValue(int $start, int $end): mixed
+    public function getValue(int $start, int $end, ?string $filterValue): mixed
     {
+        list($where, $params) = MeasurementHelper::createWhere($start, $end, $filterValue, 'l');
         $result = $this->db->load_all_extended(
             'l.url, count(l.id) num',
             Store::LOGTABLENAME . ' l',
-            'l.time >= %d AND l.time <= %d GROUP BY l.url ORDER BY num DESC LIMIT 100',
-            [$start, $end]
+            $where . ' GROUP BY l.url ORDER BY num DESC LIMIT 100',
+            $params
         );
         $total = 0;
         foreach ($result as $row) {

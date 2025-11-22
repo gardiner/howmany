@@ -19,9 +19,19 @@ const app = {
         return {
             config: config,
             measurements: null,
+            filterinput: null,
+            filtervalue: null,
         };
     },
     components: components,
+    methods: {
+        apply_filterinput: function() {
+            this.filtervalue = this.filterinput;
+        },
+        reset_filtervalue: function() {
+            this.filtervalue = this.filterinput = null;
+        },
+    },
     created: function() {
         var self = this;
 

@@ -43,8 +43,8 @@ export default {
         },
     },
     measurements: {
-        get: function(key, timescale, page, refresh) {
-            return request('measurement', {key, timescale, page, refresh});
+        get: function(key, timescale, page, refresh, filtervalue) {
+            return request('measurement', {key, timescale, page, refresh, filtervalue});
         },
         list: function() {
             return request('measurements');

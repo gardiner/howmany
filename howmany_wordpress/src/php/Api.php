@@ -57,6 +57,7 @@ class Api {
         $timeScale = $params['timescale'] ?? null;
         $page = $params['page'] ?? 0;
         $refresh = $params['refresh'] ?? false;
-        return $this->measurementService->applyMeasurement($key, $timeScale, $page, $refresh);
+        $filterValue = $params['filtervalue'] ?? false;
+        return $this->measurementService->applyMeasurement($key, $timeScale, $page, $refresh, $filterValue);
     }
 }

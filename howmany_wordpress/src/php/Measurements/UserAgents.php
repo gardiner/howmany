@@ -4,6 +4,7 @@ namespace OleTrenner\HowMany\Measurements;
 
 use OleTrenner\HowMany\Database;
 use OleTrenner\HowMany\Measurement;
+use OleTrenner\HowMany\MeasurementHelper;
 use OleTrenner\HowMany\MeasurementType;
 use OleTrenner\HowMany\Store;
 
@@ -25,13 +26,14 @@ class UserAgents implements Measurement
         return MeasurementType::Relative;
     }
 
-    public function getValue(int $start, int $end): mixed
+    public function getValue(int $start, int $end, ?string $filterValue): mixed
     {
+        list($where, $params) = MeasurementHelper::createWhere($start, $end, $filterValue);
         $result = $this->db->load_all_extended(
             'useragent, count(id) num',
             Store::LOGTABLENAME,
-            'time >= %d AND time <= %d GROUP BY useragent ORDER BY num DESC LIMIT 100',
-            [$start, $end]
+            $where . ' GROUP BY useragent ORDER BY num DESC LIMIT 100',
+            $params
         );
         $count = $this->count($result);
         $total = array_sum($count);

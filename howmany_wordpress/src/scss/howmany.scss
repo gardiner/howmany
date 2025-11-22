@@ -39,6 +39,18 @@ $blue: #5391C8;
         text-align: center;
     }
 
+    code {
+        font-size: inherit;
+    }
+
+    .searchbar {
+        margin: 2em 0 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5em;
+        align-items: baseline;
+    }
+
     .chart,
     .valuetable {
         margin: 1em 0 2em;

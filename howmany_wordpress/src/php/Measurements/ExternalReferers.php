@@ -4,6 +4,7 @@ namespace OleTrenner\HowMany\Measurements;
 
 use OleTrenner\HowMany\Database;
 use OleTrenner\HowMany\Measurement;
+use OleTrenner\HowMany\MeasurementHelper;
 use OleTrenner\HowMany\MeasurementType;
 use OleTrenner\HowMany\Store;
 
@@ -25,14 +26,17 @@ class ExternalReferers implements Measurement
         return MeasurementType::Relative;
     }
 
-    public function getValue(int $start, int $end): mixed
+    public function getValue(int $start, int $end, ?string $filterValue): mixed
     {
         global $wpdb;
+        list($where, $params) = MeasurementHelper::createWhere($start, $end, $filterValue, 'l');
+        $where .= ' AND l.referer != \'\' AND l.referer NOT LIKE %s';
+        $params[] = [$wpdb->esc_like(home_url()) . '%'];
         $result = $this->db->load_all_extended(
             'l.referer, count(l.id) num',
             Store::LOGTABLENAME . ' l',
-            'l.time >= %d AND l.time <= %d AND l.referer != \'\' AND l.referer NOT LIKE %s GROUP BY l.referer ORDER BY num DESC',
-            [$start, $end, $wpdb->esc_like(home_url()) . '%']
+            $where . ' GROUP BY l.referer ORDER BY num DESC',
+            $params
         );
         $total = 0;
         foreach ($result as $row) {

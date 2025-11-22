@@ -5,10 +5,14 @@ button {
     margin: 0.2em;
     padding: 0.25em 0.5em;
     border-radius: 3px;
-    border: 1px solid #aaa;
-    color: $blue;
-    background: #ddd;
     cursor: pointer;
+    font: inherit;
+    border: 1px solid currentColor;
+
+    &:not(.button-primary):not(.button-secondary) {
+        color: $blue;
+        background: #ddd;
+    }
 
     &[disabled] {
         opacity: 0.3;

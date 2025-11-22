@@ -58,7 +58,7 @@ class MeasurementService
         return $result;
     }
 
-    public function applyMeasurement(?string $measurementKey, ?string $timeScaleKey, int $page, bool $refresh): array
+    public function applyMeasurement(?string $measurementKey, ?string $timeScaleKey, int $page, bool $refresh, ?string $filterValue): array
     {
         $className = $this->measurements[$measurementKey] ?? null;
         $timeScale = $this->getTimeScale($timeScaleKey);
@@ -69,11 +69,18 @@ class MeasurementService
 
         if ($measurement->getType() == MeasurementType::TimeSeries) {
             list($start, $end) = $this->getTimeseriesBoundaries($timeScale, $page);
-            $values = $this->applyTimeseries($measurementKey, $measurement, $start, $end, $timeScale['resolution'],
-                $refresh);
+            $values = $this->applyTimeseries(
+                $measurementKey,
+                $measurement,
+                $start,
+                $end,
+                $timeScale['resolution'],
+                $refresh,
+                $filterValue
+            );
         } else {
             list($start, $end) = $this->getDiscreteBoundaries($timeScale, $page);
-            $values = $this->applyDiscrete($measurementKey, $measurement, $start, $end, $refresh);
+            $values = $this->applyDiscrete($measurementKey, $measurement, $start, $end, $refresh, $filterValue);
         }
         return [
             'timespan' => $start->format('j.m.Y, G:i') . ' Uhr - ' . $end->format('j.m.Y, G:i') . ' Uhr',
@@ -81,7 +88,14 @@ class MeasurementService
         ];
     }
 
-    protected function applyDiscrete(string $key, Measurement $measurement, CarbonImmutable $start, CarbonImmutable $end, bool $refresh): array
+    protected function applyDiscrete(
+        string $key,
+        Measurement $measurement,
+        CarbonImmutable $start,
+        CarbonImmutable $end,
+        bool $refresh,
+        ?string $filterValue,
+    ): array
     {
         $slot = [
             'start' => $start->timestamp,
@@ -91,44 +105,54 @@ class MeasurementService
         ];
 
         $values = null;
+        $slotId = $slot['id'] . '|' . ($filterValue ?? '');
 
         if (static::USE_CACHE && !$slot['is_current'] && !$refresh) {
-            $values = $this->store->getValue($key, $slot['id']);
+            $values = $this->store->getValue($key, $slotId);
         }
 
         if (!$values) {
-            $values = $measurement->getValue($slot['start'], $slot['end']);
+            $values = $measurement->getValue($slot['start'], $slot['end'], $filterValue);
             if (static::USE_CACHE && !is_null($values) && !$slot['is_current']) {
-                $this->store->storeValue($key, $slot['id'], $values);
+                $this->store->storeValue($key, $slotId, $values);
             }
         }
 
         return [
-            'slot' => $slot['id'],
+            'slot' => $slotId,
             'values' => $values,
         ];
     }
 
-    protected function applyTimeseries(string $key, Measurement $measurement, CarbonImmutable $start, CarbonImmutable $end, Resolution $resolution, bool $refresh): array
+    protected function applyTimeseries(
+        string $key,
+        Measurement $measurement,
+        CarbonImmutable $start,
+        CarbonImmutable $end,
+        Resolution $resolution,
+        bool $refresh,
+        ?string $filterValue,
+    ): array
     {
         $slots = $this->prepareSlots($start, $end, $resolution);
         $result = [];
         foreach ($slots as $slot) {
             $value = null;
+            $slotId = $slot['id'] . '|' . ($filterValue ?? '');
 
             if (static::USE_CACHE && !$slot['is_current'] && !$slot['is_future'] && !$refresh) {
-                $value = $this->store->getValue($key, $slot['id']);
+                $value = $this->store->getValue($key, $slotId);
             }
 
             if (is_null($value) && !$slot['is_future']) {
-                $value = $measurement->getValue($slot['start'], $slot['end']);
+                $value = $measurement->getValue($slot['start'], $slot['end'], $filterValue);
                 if (static::USE_CACHE && !is_null($value) && !$slot['is_current']) {
-                    $this->store->storeValue($key, $slot['id'], $value);
+                    $this->store->storeValue($key, $slotId, $value);
                 }
             }
 
             $result[] = [
-                'slot' => $slot['id'],
+                'slot' => $slotId,
                 'label' => $slot['label'],
                 'value' => $slot['is_future'] ? null : $value,
             ];

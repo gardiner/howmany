@@ -4,6 +4,7 @@ namespace OleTrenner\HowMany\Measurements;
 
 use OleTrenner\HowMany\Database;
 use OleTrenner\HowMany\Measurement;
+use OleTrenner\HowMany\MeasurementHelper;
 use OleTrenner\HowMany\MeasurementType;
 use OleTrenner\HowMany\Store;
 
@@ -25,12 +26,15 @@ class Visits implements Measurement
         return MeasurementType::TimeSeries;
     }
 
-    public function getValue(int $start, int $end): mixed
+    public function getValue(int $start, int $end, ?string $filterValue): mixed
     {
-        $result = $this->db->load_all_extended('count(distinct visit) total', Store::LOGTABLENAME, 'time >= %d AND time <= %d', [
-            $start,
-            $end,
-        ]);
+        list($where, $params) = MeasurementHelper::createWhere($start, $end, $filterValue);
+        $result = $this->db->load_all_extended(
+            'count(distinct visit) total',
+            Store::LOGTABLENAME,
+            $where,
+            $params
+        );
         return (int)$result[0]->total;
     }
 }

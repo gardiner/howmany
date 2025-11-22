@@ -6,6 +6,7 @@ use Carbon\CarbonInterface;
 use Carbon\CarbonInterval;
 use OleTrenner\HowMany\Database;
 use OleTrenner\HowMany\Measurement;
+use OleTrenner\HowMany\MeasurementHelper;
 use OleTrenner\HowMany\MeasurementType;
 use OleTrenner\HowMany\Store;
 
@@ -27,16 +28,14 @@ class VisitDurations implements Measurement
         return MeasurementType::Discrete;
     }
 
-    public function getValue(int $start, int $end): mixed
+    public function getValue(int $start, int $end, ?string $filterValue): mixed
     {
+        list($where, $params) = MeasurementHelper::createWhere($start, $end, $filterValue, 'l');
         $result = $this->db->load_all_extended(
             'duration, count(duration) num',
-            '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . Store::LOGTABLENAME . ' l WHERE l.time >= %d AND l.time <= %d GROUP BY visit) durations',
+            '(SELECT l.visit, (max(l.time)-min(l.time)) duration FROM ' . Store::LOGTABLENAME . ' l WHERE ' . $where . ' GROUP BY visit) durations',
             'TRUE GROUP BY duration ORDER BY duration LIMIT 15',
-            [
-                $start,
-                $end,
-            ]
+            $params
         );
         $values = [];
         foreach ($result as $row) {
