@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: HowMany
-Plugin URI: ...
+Plugin URI: http://www.3dbits.de
 Description: Simple Website Statistics
 Version: 1.3.0
 Author: Ole Trenner
