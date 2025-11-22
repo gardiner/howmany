@@ -8,7 +8,7 @@ import chartmodel from 'model/charts';
 
 export default {
     template: require('components/_chart.pug').default,
-    props: ['label', 'values', 'type'],
+    props: ['label', 'values', 'type', 'is_updating'],
     data: function() {
         return {
             chart: null,
@@ -16,6 +16,7 @@ export default {
     },
     watch: {
         values: 'init_chart',
+        is_updating: 'update_chart',
     },
     methods: {
         init_chart: function() {
@@ -27,6 +28,12 @@ export default {
             if (chartmodel.hasOwnProperty(this.type)) {
                 this.chart = chartmodel[this.type](canvas, this.values);
             }
+        },
+        update_chart: function() {
+            if (!this.is_updating) {
+                return;
+            }
+            this.chart.update('hide');
         }
     },
     mounted: function() {

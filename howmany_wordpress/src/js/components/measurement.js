@@ -42,6 +42,7 @@ export default {
             data: null,
             timespan: null,
             is_loading: false,
+            request: 0,
         };
     },
     computed: {
@@ -68,10 +69,14 @@ export default {
         },
         load_data: function(refresh) {
             var self = this,
-                scale = self.scale || {};
+                scale = self.scale || {},
+                request = ++self.request;
             self.is_loading = true;
             api.measurements.get(_.get(self.measurement, 'key'), scale.timescale, scale.page, refresh, this.filtervalue)
             .then(function(result) {
+                if (request != self.request) {
+                    return;
+                }
                 self.timespan = result.timespan;
                 self.data = result.values;
                 self.is_loading = false;

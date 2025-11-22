@@ -7,7 +7,9 @@ import Chart from 'chart.js/auto';
 import config from 'config';
 
 
-const CHART_BG = '#ffffff77';
+export const CHART_BG = '#ffffff77';
+export const BLUE = '#274060';
+export const GRAY = '#cccccc';
 
 
 //setup charts
@@ -66,7 +68,7 @@ function linechart(canvasElement, data) {
             datasets: [
                 {
                     label: data.label || '',
-                    strokeColor: data.color || '#274060',
+                    strokeColor: data.color || BLUE,
                     data: data.y || [],
                 }
             ]
@@ -128,7 +130,7 @@ function barchart(canvasElement, data) {
             datasets: [
                 {
                     label: data.label || '',
-                    fillColor: data.color || '#274060',
+                    fillColor: data.color || BLUE,
                     data: data.y || []
                 }
             ]
@@ -137,6 +139,10 @@ function barchart(canvasElement, data) {
 }
 
 export default {
+    CHART_BG,
+    BLUE,
+    GRAY,
+
     linechart,
     piechart,
     barchart

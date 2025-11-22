@@ -11,7 +11,8 @@
 
     chart(v-if="chart_data && config.is_chart_visible"
           :type="config.chart_type"
-          :values="chart_data")
+          :values="chart_data"
+          :is_updating="is_loading")
 
     valuetable(v-if="chart_data && config.is_valuelist_visible"
                :values="chart_data"
