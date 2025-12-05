@@ -2,8 +2,7 @@
 
 namespace OleTrenner\HowMany;
 
-use Carbon\CarbonImmutable;
-use OleTrenner\HowMany\Measurements\Views;
+use DateTimeInterface;
 
 class MeasurementService
 {
@@ -91,17 +90,17 @@ class MeasurementService
     protected function applyDiscrete(
         string $key,
         Measurement $measurement,
-        CarbonImmutable $start,
-        CarbonImmutable $end,
+        DateTimeInterface $start,
+        DateTimeInterface $end,
         bool $refresh,
         ?string $filterValue,
     ): array
     {
         $slot = [
-            'start' => $start->timestamp,
-            'end' => $end->timestamp,
+            'start' => $start->getTimestamp(),
+            'end' => $end->getTimestamp(),
             'id' => $start->format('Y-m-d-H-i') . '|' . $end->format('Y-m-d-H-i'),
-            'is_current' => CarbonImmutable::now()->isBetween($start, $end),
+            'is_current' => PointInTime::now()->isBetween($start, $end),
         ];
 
         $values = null;
@@ -127,8 +126,8 @@ class MeasurementService
     protected function applyTimeseries(
         string $key,
         Measurement $measurement,
-        CarbonImmutable $start,
-        CarbonImmutable $end,
+        DateTimeInterface $start,
+        DateTimeInterface $end,
         Resolution $resolution,
         bool $refresh,
         ?string $filterValue,
@@ -160,15 +159,16 @@ class MeasurementService
         return $result;
     }
 
-    protected function prepareSlots(CarbonImmutable $start, CarbonImmutable $end, Resolution $resolution): array
+    protected function prepareSlots(DateTimeInterface $start, DateTimeInterface $end, Resolution $resolution): array
     {
         $slots = [];
-        $current = $start->copy();
-        while ($current < $end) {
+        /* @var PointInTime $current */
+        $current = PointInTime::fromDateTime($start);
+        while ($current->getDateTime() < $end) {
             if ($resolution == Resolution::Hour) {
                 $slots[] = [
-                    'start' => $current->timestamp,
-                    'end' => $current->endOfHour()->timestamp,
+                    'start' => $current->getTimestamp(),
+                    'end' => $current->endOfHour()->getTimestamp(),
                     'id' => $current->format('Y-m-d-H'),
                     'label' => $current->format('j.m., G') . ':00 Uhr',
                     'is_current' => $current->endOfHour()->isFuture(),
@@ -177,8 +177,8 @@ class MeasurementService
                 $current = $current->addHour();
             } elseif ($resolution == Resolution::Day) {
                 $slots[] = [
-                    'start' => $current->startOfDay()->timestamp,
-                    'end' => $current->endOfDay()->timestamp,
+                    'start' => $current->startOfDay()->getTimestamp(),
+                    'end' => $current->endOfDay()->getTimestamp(),
                     'id' => $current->format('Y-m-d'),
                     'label' => $current->format('j.m.Y'),
                     'is_current' => $current->endOfDay()->isToday(),
@@ -187,8 +187,8 @@ class MeasurementService
                 $current = $current->addDay();
             } elseif ($resolution == Resolution::Month) {
                 $slots[] = [
-                    'start' => $current->startOfMonth()->timestamp,
-                    'end' => $current->endOfMonth()->timestamp,
+                    'start' => $current->startOfMonth()->getTimestamp(),
+                    'end' => $current->endOfMonth()->getTimestamp(),
                     'id' => $current->format('Y-m'),
                     'label' => $current->format('M Y'),
                     'is_current' => $current->endOfMonth()->isCurrentMonth(),
@@ -197,8 +197,8 @@ class MeasurementService
                 $current = $current->addMonth();
             } elseif ($resolution == Resolution::Year) {
                 $slots[] = [
-                    'start' => $current->startOfYear()->timestamp,
-                    'end' => $current->endOfYear()->timestamp,
+                    'start' => $current->startOfYear()->getTimestamp(),
+                    'end' => $current->endOfYear()->getTimestamp(),
                     'id' => $current->format('Y'),
                     'label' => $current->format('Y'),
                     'is_current' => $current->endOfYear()->isCurrentYear(),
@@ -212,7 +212,7 @@ class MeasurementService
 
     protected function getTimeseriesBoundaries(array $timeScale, int $page): array
     {
-        $start = $end = $today = CarbonImmutable::now()->locale('de');
+        $start = $end = $today = PointInTime::now();
 
         $resolution = $timeScale['resolution']; /** @var Resolution $resolution */
         switch ($resolution) {
@@ -237,12 +237,12 @@ class MeasurementService
                 $start = $end->startOfDay()->subDays($daysPerPage - 1);
                 break;
         }
-        return [$start, $end];
+        return [$start->getDateTime(), $end->getDateTime()];
     }
 
     protected function getDiscreteBoundaries(array $timeScale, int $page): array
     {
-        $start = $end = $today = CarbonImmutable::now()->locale('de');
+        $start = $end = $today = PointInTime::now();
 
         $resolution = $timeScale['resolution']; /** @var Resolution $resolution */
         switch ($resolution) {
@@ -263,7 +263,7 @@ class MeasurementService
                 $end = $start->endOfHour();
                 break;
         }
-        return [$start, $end];
+        return [$start->getDateTime(), $end->getDateTime()];
     }
 
     protected function getTimeScale(?string $key): ?array

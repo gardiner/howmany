@@ -2,8 +2,6 @@
 
 namespace OleTrenner\HowMany\Measurements;
 
-use Carbon\CarbonInterface;
-use Carbon\CarbonInterval;
 use OleTrenner\HowMany\Database;
 use OleTrenner\HowMany\Measurement;
 use OleTrenner\HowMany\MeasurementHelper;
@@ -49,7 +47,35 @@ class VisitDurations implements Measurement
 
     protected function readableDuration(int $seconds): string
     {
-        $d = CarbonInterval::seconds($seconds)->cascade();
-        return $d->forHumans(null, true);
+        $secondsInDay = 60 * 60 * 24;
+        $secondsInHour = 60 * 60;
+        $secondsInMinute = 60;
+        $days = $hours = $minutes = 0;
+        if ($seconds >= $secondsInDay) {
+            $days = floor($seconds / $secondsInDay);
+            $seconds -= $days * $secondsInDay;
+        }
+        if ($seconds >= $secondsInHour) {
+            $hours = floor($seconds / $secondsInHour);
+            $seconds -= $hours * $secondsInHour;
+        }
+        if ($seconds >= $secondsInMinute) {
+            $minutes = floor($seconds / $secondsInMinute);
+            $seconds -= $minutes * $secondsInMinute;
+        }
+        $result = [];
+        if ($days) {
+            $result[] = $days . 'd';
+        }
+        if ($hours) {
+            $result[] = $hours . 'h';
+        }
+        if ($minutes) {
+            $result[] = $minutes . 'm';
+        }
+        if ($seconds) {
+            $result[] = $seconds . 's';
+        }
+        return implode('', $result);
     }
 }

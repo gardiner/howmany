@@ -1,8 +1,7 @@
 {
   "name": "oletrenner/howmany_wordpress",
   "require": {
-    "donatj/phpuseragentparser": "*",
-    "nesbot/carbon": "^3.8"
+    "donatj/phpuseragentparser": "*"
   },
   "autoload": {
     "psr-4": {
