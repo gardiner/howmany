@@ -1,3 +1,9 @@
+## 1.3.1 (05.12.2025)
+
+* replaced nesbot/carbon with own implementation
+* hide charts while updating to avoid confusion, prevent update request race condition
+* adjusted website url
+
 ## 1.3.0 (22.11.2025)
 
 * allow filtering results
