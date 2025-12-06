@@ -45,7 +45,7 @@ class Urls implements Measurement
         foreach ($result as $row) {
             $values[] = [
                 'key' => $row->url,
-                'value' => $row->num,
+                'value' => (int)$row->num,
                 'total' => $total,
                 'rel' => 1. * $row->num / $total,
             ];
