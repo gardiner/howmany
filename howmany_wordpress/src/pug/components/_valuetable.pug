@@ -12,3 +12,7 @@
                 td {{round(row.rel*100)}}%
                 td {{row.value}}
                 td {{row.label}}
+
+    button(v-if="is_expandable"
+           type="button"
+           @click="is_expanded=!is_expanded") {{is_expanded ? 'Liste verkürzen' : 'Liste erweitern'}}
