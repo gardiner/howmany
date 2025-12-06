@@ -29,21 +29,24 @@ class Urls implements Measurement
     public function getValue(int $start, int $end, ?string $filterValue): mixed
     {
         list($where, $params) = MeasurementHelper::createWhere($start, $end, $filterValue, 'l');
+        $total = (int)($this->db->load_all_extended(
+            'count(*) total',
+            Store::LOGTABLENAME . ' l',
+            $where,
+            $params
+        )[0]->total);
         $result = $this->db->load_all_extended(
             'l.url, count(l.id) num',
             Store::LOGTABLENAME . ' l',
             $where . ' GROUP BY l.url ORDER BY num DESC LIMIT 100',
             $params
         );
-        $total = 0;
-        foreach ($result as $row) {
-            $total += $row->num;
-        }
         $values = [];
         foreach ($result as $row) {
             $values[] = [
                 'key' => $row->url,
                 'value' => $row->num,
+                'total' => $total,
                 'rel' => 1. * $row->num / $total,
             ];
         }
