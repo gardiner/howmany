@@ -13,6 +13,10 @@ $blue: #5391C8;
         box-sizing: inherit;
     }
 
+    .nav-tab-wrapper {
+        margin-bottom: 2em;
+    }
+
     .details {
         margin: 2em 0;
 
@@ -44,7 +48,6 @@ $blue: #5391C8;
     }
 
     .searchbar {
-        margin: 2em 0 0;
         display: flex;
         flex-wrap: wrap;
         gap: 0.5em;

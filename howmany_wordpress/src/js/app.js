@@ -17,6 +17,7 @@ const app = {
     template: require('_app.pug').default,
     data: function() {
         return {
+            is_loading: false,
             config: config,
             measurements: null,
             filterinput: null,
@@ -35,8 +36,10 @@ const app = {
     created: function() {
         var self = this;
 
+        self.is_loading = true;
         $.when(api.timescales.list(), api.measurements.list())
         .then(function(timescales, measurements) {
+            self.is_loading = false;
             config.timescales = timescales;
             self.measurements = measurements;
         });

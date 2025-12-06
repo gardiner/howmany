@@ -2,13 +2,17 @@
     h2.nav-tab-wrapper
         a.nav-tab.nav-tab-active(href="#") Überblick
 
-    .searchbar
-        label(for="filterterm") Suchbegriff
-        input#filterterm.regular-text(type="text" v-model="filterinput" @keypress.enter="apply_filterinput")
-        button.button-primary(type="button" @click="apply_filterinput") Ergebnisse filtern
-        button.button-secondary(type="button" @click="reset_filtervalue") Filter zurücksetzen
+    template(v-if="is_loading")
+        em #[span.dashicons.dashicons-update.spin] Lade Auswertungen…
 
-    .chartgrid
-        template(v-for="m in measurements")
-            measurement(:measurement="m"
-                        :filtervalue="filtervalue")
+    template(v-else="")
+        .searchbar
+            label(for="filterterm") Suchbegriff
+            input#filterterm.regular-text(type="text" v-model="filterinput" @keypress.enter="apply_filterinput")
+            button.button-primary(type="button" @click="apply_filterinput") Ergebnisse filtern
+            button.button-secondary(type="button" @click="reset_filtervalue") Filter zurücksetzen
+
+        .chartgrid
+            template(v-for="m in measurements")
+                measurement(:measurement="m"
+                            :filtervalue="filtervalue")
