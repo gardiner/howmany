@@ -73,7 +73,7 @@ class VisitDurations implements Measurement
         if ($minutes) {
             $result[] = $minutes . 'm';
         }
-        if ($seconds) {
+        if ($seconds || empty($result)) {
             $result[] = $seconds . 's';
         }
         return implode('', $result);
