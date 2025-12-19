@@ -39,20 +39,6 @@ class Store {
         $currentversion = self::DBVERSION;
 
         if ($dbversion != $currentversion) {
-            if ($dbversion < 3) {
-                //add cache table
-                $this->db->query('CREATE TABLE ' . self::CACHETABLENAME . ' (' .
-                                'id bigint(20) PRIMARY KEY AUTO_INCREMENT,' .
-                                'measurement varchar(1000),' .
-                                'slot varchar(1000),' .
-                                'value JSON' .
-                           ')');
-            }
-            if ($dbversion < 2) {
-                //add missing visit column and populate it with values
-                $this->db->query('ALTER TABLE ' . self::LOGTABLENAME . ' ADD visit int');
-                $this->regenerate_visits();
-            }
             if ($dbversion < 1) {
                 $this->db->query('CREATE TABLE ' . self::LOGTABLENAME . ' (' .
                                 'id bigint(20) PRIMARY KEY AUTO_INCREMENT,' .
@@ -62,6 +48,19 @@ class Store {
                                 'referer varchar(4096),' .
                                 'useragent varchar(4096),' .
                                 'visit int' .
+                           ')');
+            } else if ($dbversion < 2) {
+                //add missing visit column and populate it with values
+                $this->db->query('ALTER TABLE ' . self::LOGTABLENAME . ' ADD visit int');
+                $this->regenerate_visits();
+            }
+            if ($dbversion < 3) {
+                //add cache table
+                $this->db->query('CREATE TABLE ' . self::CACHETABLENAME . ' (' .
+                                'id bigint(20) PRIMARY KEY AUTO_INCREMENT,' .
+                                'measurement varchar(1000),' .
+                                'slot varchar(1000),' .
+                                'value JSON' .
                            ')');
             }
             update_option('hm_dbversion', $currentversion);
