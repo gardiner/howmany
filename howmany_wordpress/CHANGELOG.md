@@ -1,3 +1,14 @@
+## 1.4.0 (30.12.2025)
+
+* added filter hook to integrate with sitehappy site monitoring
+* adjusted db schema migrations
+* fixed grid sizing
+* return url visit count as int
+* show loading indicator while loading list of measurements
+* allow to expand value table list
+* use absolute total as reference for relative view count
+* show duration of 0s as such
+
 ## 1.3.1 (05.12.2025)
 
 * replaced nesbot/carbon with own implementation
