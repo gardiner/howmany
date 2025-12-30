@@ -63,6 +63,9 @@ class HowMany {
 
             //hooking into wordpress to track requests
             add_action('init', array($this, 'track_request'));
+
+            //hooking into sitehappy
+            add_filter('sitehappy_statistics_overview', array($this->measurementService, 'getOverview'));
         }
     }
 

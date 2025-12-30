@@ -3,6 +3,8 @@
 namespace OleTrenner\HowMany;
 
 use DateTimeInterface;
+use OleTrenner\HowMany\Measurements\Views;
+
 
 class MeasurementService
 {
@@ -85,6 +87,21 @@ class MeasurementService
             'timespan' => $start->format('j.m.Y, G:i') . ' Uhr - ' . $end->format('j.m.Y, G:i') . ' Uhr',
             'values' => $values,
         ];
+    }
+
+    public function getOverview() {
+        $measurement = new Views($this->db);
+        list($start, $end) = $this->getOverviewBoundaries();
+        $values = $this->applyTimeseries(
+            'statistics_overview', 
+            $measurement,
+            $start,
+            $end,
+            Resolution::Day,
+            false,
+            null
+        );
+        return $values;
     }
 
     protected function applyDiscrete(
@@ -208,6 +225,14 @@ class MeasurementService
             }
         }
         return $slots;
+    }
+
+    protected function getOverviewBoundaries(): array
+    {
+        $start = $end = $today = PointInTime::now();
+        $end = $end->startOfDay()->addDay();
+        $start = $end->subDays(14);
+        return [$start->getDateTime(), $end->getDateTime()];
     }
 
     protected function getTimeseriesBoundaries(array $timeScale, int $page): array
