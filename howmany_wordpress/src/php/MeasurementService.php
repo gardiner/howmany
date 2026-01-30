@@ -243,22 +243,22 @@ class MeasurementService
         switch ($resolution) {
             case Resolution::Year:
                 $yearsPerPage = 10;
-                $end = $today->endOfYear()->subYears($page * $yearsPerPage);
+                $end = $today->startOfYear()->subYears($page * $yearsPerPage)->endOfYear();
                 $start = $end->startOfYear()->subYears($yearsPerPage - 1);
                 break;
             case Resolution::Month:
                 $yearsPerPage = 2;
-                $end = $today->endOfYear()->subYears($page * $yearsPerPage);
+                $end = $today->startOfYear()->subYears($page * $yearsPerPage)->endOfYear();
                 $start = $end->startOfYear()->subYears($yearsPerPage - 1);
                 break;
             case Resolution::Day:
                 $monthsPerPage = 2;
-                $end = $today->endOfMonth()->subMonths($page * $monthsPerPage);
+                $end = $today->startOfMonth()->subMonths($page * $monthsPerPage)->endOfMonth();
                 $start = $end->startOfMonth()->subMonths($monthsPerPage - 1);
                 break;
             case Resolution::Hour:
                 $daysPerPage = 3;
-                $end = $today->endOfDay()->subDays($page * $daysPerPage);
+                $end = $today->startOfDay()->subDays($page * $daysPerPage)->endOfDay();
                 $start = $end->startOfDay()->subDays($daysPerPage - 1);
                 break;
         }
