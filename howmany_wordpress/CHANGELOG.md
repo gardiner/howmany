@@ -1,3 +1,10 @@
+## 1.4.1 (30.01.2026)
+
+* updated rakefile to prevent dev dependencies from being packaged
+* fixed issues in time series boundaries calculation (caused by using end of month as reference)
+* added phpstan config fixed phpstan errors
+* changed literal array notation
+
 ## 1.4.0 (30.12.2025)
 
 * added filter hook to integrate with sitehappy site monitoring
