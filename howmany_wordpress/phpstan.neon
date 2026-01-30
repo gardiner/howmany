@@ -1,0 +1,8 @@
+# call phpstan like this: `vendor/bin/phpstan analyze -c phpstan.neon
+parameters:
+    level: 5
+    paths:
+        - src/php
+        - howmany.php
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon

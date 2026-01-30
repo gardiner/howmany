@@ -70,7 +70,7 @@ class PointInTime
     {
         return PointInTime::fromDateTime(
             $this->dateTime->setDate(
-                $this->dateTime->format('Y'),
+                (int)$this->dateTime->format('Y'),
                 1,
                 1,
             )->setTime(
@@ -99,8 +99,8 @@ class PointInTime
     {
         return PointInTime::fromDateTime(
             $this->dateTime->setDate(
-                $this->dateTime->format('Y'),
-                $this->dateTime->format('m'),
+                (int)$this->dateTime->format('Y'),
+                (int)$this->dateTime->format('m'),
                 1,
             )->setTime(
                 0,
@@ -128,9 +128,9 @@ class PointInTime
     {
         return PointInTime::fromDateTime(
             $this->dateTime->setDate(
-                $this->dateTime->format('Y'),
-                $this->dateTime->format('m'),
-                $this->dateTime->format('d'),
+                (int)$this->dateTime->format('Y'),
+                (int)$this->dateTime->format('m'),
+                (int)$this->dateTime->format('d'),
             )->setTime(
                 0,
                 0,
@@ -157,7 +157,7 @@ class PointInTime
     {
         return PointInTime::fromDateTime(
             $this->dateTime->setTime(
-                $this->dateTime->format('H'),
+                (int)$this->dateTime->format('H'),
                 0,
             )
         );
