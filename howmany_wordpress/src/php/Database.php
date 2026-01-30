@@ -41,12 +41,12 @@ class Database {
             return $query;
         }
         $query = $where ? "$query WHERE $where" : $query;
-        $params = $params ? $params : array();
+        $params = $params ? $params : [];
         if (empty($params)) {
             return $query;
         }
         array_unshift($params, $query);
-        $statement = call_user_func_array(array($this->db, 'prepare'), $params);
+        $statement = call_user_func_array([&$this->db, 'prepare'], $params);
         return $statement;
     }
 }

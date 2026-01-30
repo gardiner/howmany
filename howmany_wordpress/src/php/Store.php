@@ -71,12 +71,11 @@ class Store {
         $views = $this->db->load_all(self::LOGTABLENAME . ' l', 'l.visit IS NULL ORDER BY l.time');
         foreach ($views as $view) {
             $result = $this->db->query('SELECT COALESCE(' .
-                                    '(SELECT MAX(l.visit) FROM ' . self::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
-                                    '(SELECT MAX(ll.visit)+1 FROM ' . self::LOGTABLENAME . ' ll),
-                                    1) visit',
-                                array($view->fingerprint, $view->time, self::MAXVISITLENGTH));
+                '(SELECT MAX(l.visit) FROM ' . self::LOGTABLENAME . ' l WHERE l.fingerprint=%s AND %d-l.time < %d),' .
+                '(SELECT MAX(ll.visit)+1 FROM ' . self::LOGTABLENAME . ' ll), 1) visit',
+                [$view->fingerprint, $view->time, self::MAXVISITLENGTH]);
             $visit = $result[0]->visit;
-            $this->db->query('UPDATE ' . self::LOGTABLENAME . ' l SET l.visit=%d WHERE l.id=%d', array($visit, $view->id));
+            $this->db->query('UPDATE ' . self::LOGTABLENAME . ' l SET l.visit=%d WHERE l.id=%d', [$visit, $view->id]);
         }
     }
 }

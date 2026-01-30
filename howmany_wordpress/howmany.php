@@ -57,15 +57,15 @@ class HowMany {
 
         if (function_exists('add_action')) {
             //backend functionality
-            add_action('admin_enqueue_scripts', array($this, 'init_admin_resources'));
-            add_action('admin_menu', array($this, 'init_menus'));
-            add_action('wp_ajax_hm_api', array($this->api, 'handle'));
+            add_action('admin_enqueue_scripts', [&$this, 'init_admin_resources']);
+            add_action('admin_menu', [&$this, 'init_menus']);
+            add_action('wp_ajax_hm_api', [&$this->api, 'handle']);
 
             //hooking into wordpress to track requests
-            add_action('init', array($this, 'track_request'));
+            add_action('init', [&$this, 'track_request']);
 
             //hooking into sitehappy
-            add_filter('sitehappy_statistics_overview', array($this->measurementService, 'getOverview'));
+            add_filter('sitehappy_statistics_overview', [&$this->measurementService, 'getOverview']);
         }
     }
 
@@ -80,7 +80,7 @@ class HowMany {
     }
 
     public function init_menus() {
-        add_menu_page('HowMany', 'HowMany', 'manage_options', 'hm_overview', array($this, 'render_adminpage'), 'dashicons-chart-bar');
+        add_menu_page('HowMany', 'HowMany', 'manage_options', 'hm_overview', [&$this, 'render_adminpage'], 'dashicons-chart-bar');
     }
 
     public function render_adminpage() {
@@ -88,13 +88,13 @@ class HowMany {
         $version = $info['Version'];
 
         $this->store->check_schema();
-        $options = json_encode(array(
+        $options = json_encode([
             "servername" => $_SERVER['SERVER_NAME'],    //will be used to determine external and internal referers
-            "api" => array(
+            "api" => [
                 "base" => add_query_arg(["action" => "hm_api"], admin_url("admin-ajax.php")),  //api request base url
-            ),
+            ],
             "days_limit" => $this->api->days_limit,
-        ));
+        ]);
         include('views/adminpage.html');
     }
 
@@ -144,7 +144,7 @@ class HowMany {
                                 1)' .
                             ')' .
                         ')',
-                        array($now, $fingerprint, $url, $referer, $ua, $fingerprint, $now, self::MAXVISITLENGTH));
+                        [$now, $fingerprint, $url, $referer, $ua, $fingerprint, $now, self::MAXVISITLENGTH]);
         } catch (\Exception $e) {
             //ignored. hopefully does not happen too often.
         }
@@ -164,10 +164,10 @@ class HowMany {
      * A weak checksum is used to reduce uniqueness of fingerprints.
      */
     protected function generate_fingerprint($data) {
-        $parts = array(
+        $parts = [
             implode(".", explode(".", $data['REMOTE_ADDR'], -1)),
             $data['HTTP_USER_AGENT'],
-        );
+        ];
         return hash('crc32', implode("", $parts), false);
     }
 }
