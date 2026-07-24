@@ -10,7 +10,7 @@ var sass = require('gulp-sass')(require('sass'));
 var webpackcompiler = require('webpack');
 var webpack = require('webpack-stream');
 
-var develop = process.env.prod != 'true';
+var prod = process.env.develop != 'true' && process.argv.indexOf("--develop") == -1;
 
 gulp.task('scss', function() {
     return gulp.src('src/scss/**/*.scss')
@@ -27,6 +27,7 @@ gulp.task('pug', function() {
 gulp.task('js', function() {
     return gulp.src('src/js/index.js')
     .pipe(webpack({
+        output: {filename: NAME + '.all.js'},
         resolve: {
             modules: [
                 path.resolve('src/js'),
@@ -34,7 +35,7 @@ gulp.task('js', function() {
                 path.resolve('node_modules'),
             ],
             alias: {
-                vue: !develop ? 'vue/dist/vue.min' : 'vue/dist/vue',
+                vue: 'vue/dist/vue.esm-bundler',
             }
         },
         module: {
@@ -52,8 +53,14 @@ gulp.task('js', function() {
                 }
             ],
         },
-        mode: !develop ? 'production' : 'development',
-        output: {filename: NAME + '.all.js'}
+        mode: prod ? 'production' : 'development',
+        plugins: [
+            new webpackcompiler.DefinePlugin({
+                '__VUE_OPTIONS_API__': 'true',
+                '__VUE_PROD_DEVTOOLS__': !prod,
+                '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': !prod,
+            }),
+        ],
     }, webpackcompiler))
     .pipe(gulp.dest('js'));
 });
@@ -61,7 +68,7 @@ gulp.task('js', function() {
 gulp.task('compile', gulp.parallel('pug', 'scss', 'js'));
 
 gulp.task('compile_prod', gulp.series(async function() {
-    develop = false;
+    prod = true;
 }, 'compile'));
 
 gulp.task('watch', gulp.series('compile', async function() {

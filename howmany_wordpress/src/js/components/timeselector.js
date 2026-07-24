@@ -10,8 +10,8 @@ import measurementmodel from 'model/measurements';
 
 export default {
     template: require('components/_timeselector.pug').default,
-    props: ['value'],
-    emits: ['input'],
+    props: ['modelValue'],
+    emits: ['update:modelValue'],
     data: function() {
         return {
             timescales: config.timescales,
@@ -21,10 +21,10 @@ export default {
     computed: {
         proxy: {
             get: function() {
-                return this.value;
+                return this.modelValue;
             },
             set: function(value) {
-                this.$emit('input', value);
+                this.$emit('update:modelValue', value);
             },
         },
         is_start: function() {

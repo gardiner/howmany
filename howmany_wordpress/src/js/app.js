@@ -2,7 +2,7 @@
 
 import $ from 'jquery';
 import _ from 'lodash';
-import Vue from 'vue';
+import { createApp } from 'vue';
 
 import api from 'api';
 import autoloader from 'components/autoloader';
@@ -48,7 +48,7 @@ const app = {
 
 
 function init(element) {
-    new Vue(app).$mount(element);
+    createApp(app).mount(element);
 }
 
 export default {
