@@ -106,11 +106,11 @@ class HowMany {
      * Handle downloads. Tracking happens in track_request as usual.
      */
     public function handle_download() {
-        $uploadDir = wp_get_upload_dir();
+        $uploadDirInfo = wp_get_upload_dir();
         $relPath = $_GET['file'] ?? '';
-        $baseDir = realpath($uploadDir['basedir']);
+        $baseDir = realpath($uploadDirInfo['basedir']);
         $absPath = realpath(path_join($baseDir, $relPath));
-        if (!$absPath || !is_file($absPath) || !FileUtils::hasExt($absPath, 'pdf') || !FileUtils::isBelowDir($baseDir, $absPath)) {
+        if (!$absPath || !is_file($absPath) || !PathUtils::hasExt($absPath, 'pdf') || !PathUtils::isBelowDir($baseDir, $absPath)) {
             status_header(404);
             exit();
         }
@@ -129,10 +129,13 @@ class HowMany {
     public function track_request() {
         $url = $_SERVER['REQUEST_URI'];
         $query = $_SERVER['QUERY_STRING'];
+        $uploadDirInfo = wp_get_upload_dir();
+        $uploadUrl = parse_url($uploadDirInfo['baseurl'], PHP_URL_PATH);
 
         if (preg_match("/^action=hm_trackdownload/i", $query)) {
             //this is a wanted download url which should be tracked. since it is otherwise excluded it is put here.
         } else if (is_admin() ||
+            PathUtils::isBelowDir($uploadUrl, $url) ||
             preg_match("/^\/robots\.txt/i", $url) ||
             preg_match("/^\/sitemap\.xml/i",  $url) ||
             preg_match("/^\/wp-sitemap/i",  $url) ||

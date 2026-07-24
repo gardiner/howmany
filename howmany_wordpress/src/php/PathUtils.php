@@ -2,10 +2,13 @@
 
 namespace OleTrenner\HowMany;
 
-class FileUtils {
+class PathUtils {
+    /**
+     * Checks if $path is in or below $base.
+     */
     public static function isBelowDir(string $base, string $path): bool
     {
-        return $base && $path && strncmp($path, $base . DIRECTORY_SEPARATOR, strlen($base) + 1) === 0;
+        return $base && $path && str_starts_with($path, $base);
     }
 
     public static function hasExt(string $path, string $ext): bool
