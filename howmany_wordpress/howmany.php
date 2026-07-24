@@ -64,6 +64,10 @@ class HowMany {
             //hooking into wordpress to track requests
             add_action('init', [&$this, 'track_request']);
 
+            //hooking into wordpress to track downloads
+            add_action('admin_post_hm_trackdownload', [&$this, 'handle_download']);
+            add_action('admin_post_nopriv_hm_trackdownload', [&$this, 'handle_download']);
+
             //hooking into sitehappy
             add_filter('sitehappy_statistics_overview', [&$this->measurementService, 'getOverview']);
         }
@@ -96,6 +100,20 @@ class HowMany {
             "days_limit" => $this->api->days_limit,
         ]);
         include('views/adminpage.html');
+    }
+
+    /**
+     * Handle downloads. Tracking happens in track_request as usual.
+     */
+    public function handle_download() {
+        $uploadDir = wp_upload_dir();
+        $relPath = $_GET['file'];
+        $absPath = path_join($uploadDir['basedir'], $relPath);
+        $mime = mime_content_type($absPath);
+        header('Content-Type: ' . $mime);
+        //header('Content-Disposition: attachment; filename="' . basename(absPath) . '"');
+        readfile($absPath);
+        exit();
     }
 
     /**
