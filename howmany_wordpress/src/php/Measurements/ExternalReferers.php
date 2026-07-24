@@ -31,7 +31,7 @@ class ExternalReferers implements Measurement
         global $wpdb;
         list($where, $params) = MeasurementHelper::createWhere($start, $end, $filterValue, 'l');
         $where .= ' AND l.referer != \'\' AND l.referer NOT LIKE %s';
-        $params[] = [$wpdb->esc_like(home_url()) . '%'];
+        $params[] = $wpdb->esc_like(home_url()) . '%';
         $result = $this->db->load_all_extended(
             'l.referer, count(l.id) num',
             Store::LOGTABLENAME . ' l',

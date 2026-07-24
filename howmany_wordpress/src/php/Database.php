@@ -45,8 +45,7 @@ class Database {
         if (empty($params)) {
             return $query;
         }
-        array_unshift($params, $query);
-        $statement = call_user_func_array([&$this->db, 'prepare'], $params);
+        $statement = $this->db->prepare($query, $params);
         return $statement;
     }
 }
