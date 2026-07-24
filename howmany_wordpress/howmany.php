@@ -127,15 +127,13 @@ class HowMany {
      * Track request.
      */
     public function track_request() {
-        if (is_admin()) {
-            return;
-        }
-
         $url = $_SERVER['REQUEST_URI'];
+        $query = $_SERVER['QUERY_STRING'];
 
-        if (preg_match("/^\/wp-admin\/admin-post.php\?action=hm_trackdownload/i")) {
-            //this is a wanted url which should be tracked.
-        } else if (preg_match("/^\/robots\.txt/i", $url) ||
+        if (preg_match("/^action=hm_trackdownload/i", $query)) {
+            //this is a wanted download url which should be tracked. since it is otherwise excluded it is put here.
+        } else if (is_admin() ||
+            preg_match("/^\/robots\.txt/i", $url) ||
             preg_match("/^\/sitemap\.xml/i",  $url) ||
             preg_match("/^\/wp-sitemap/i",  $url) ||
             preg_match("/^\/wp-cron/i", $url) ||
