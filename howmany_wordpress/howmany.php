@@ -106,12 +106,19 @@ class HowMany {
      * Handle downloads. Tracking happens in track_request as usual.
      */
     public function handle_download() {
-        $uploadDir = wp_upload_dir();
-        $relPath = $_GET['file'];
-        $absPath = path_join($uploadDir['basedir'], $relPath);
-        $mime = mime_content_type($absPath);
+        $uploadDir = wp_get_upload_dir();
+        $relPath = $_GET['file'] ?? '';
+        $baseDir = realpath($uploadDir['basedir']);
+        $absPath = realpath(path_join($baseDir, $relPath));
+        if (!$absPath || !is_file($absPath) || !FileUtils::hasExt($absPath, 'pdf') || !FileUtils::isBelowDir($baseDir, $absPath)) {
+            status_header(404);
+            exit();
+        }
+        $mime = mime_content_type($absPath) ?: 'application/octet-stream';
         header('Content-Type: ' . $mime);
-        //header('Content-Disposition: attachment; filename="' . basename(absPath) . '"');
+        header('Content-Disposition: inline; filename="' . basename($absPath) . '"');
+        header('Content-Length: ' . filesize($absPath));
+        header('X-Content-Type-Options: nosniff');
         readfile($absPath);
         exit();
     }
@@ -126,7 +133,9 @@ class HowMany {
 
         $url = $_SERVER['REQUEST_URI'];
 
-        if (preg_match("/^\/robots\.txt/i", $url) ||
+        if (preg_match("/^\/wp-admin\/admin-post.php\?action=hm_trackdownload/i")) {
+            //this is a wanted url which should be tracked.
+        } else if (preg_match("/^\/robots\.txt/i", $url) ||
             preg_match("/^\/sitemap\.xml/i",  $url) ||
             preg_match("/^\/wp-sitemap/i",  $url) ||
             preg_match("/^\/wp-cron/i", $url) ||
