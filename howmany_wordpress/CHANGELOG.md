@@ -1,3 +1,11 @@
+## 1.5.0 (24.07.2026)
+
+* adjusted exclusion handling in track_request to allow tracked pdf downloads to be tracked
+* hardened download handler
+* added download handler
+* fixed broken db access
+* updated dependencies, switched from vue 2.x to vue 3.x
+
 ## 1.4.1 (30.01.2026)
 
 * updated rakefile to prevent dev dependencies from being packaged
